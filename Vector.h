@@ -5,19 +5,18 @@
 #include "Angle.h"
 
 class Vector {
-private:
+public:
 	float I;
 	float J;
 	float K;
-public:
-	void setValues(float i, float j, float k);
-	float getValues(void);
+
 	Angle toAngle(void);
 	void fromAngle(Angle);
 	void rotate(Angle);
 	float magnitude(void);
-	Vector dot(Vector);
+	float dot(Vector);
 	Vector cross(Vector);
+	Vector(float=1, float=1, float=1);
 };
 
 #endif
