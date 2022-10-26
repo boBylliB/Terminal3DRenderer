@@ -1,7 +1,6 @@
 #ifndef VECTOR_H	
 #define VECTOR_H
 
-#include "Point.h"
 #include "Angle.h"
 
 class Vector {
@@ -11,12 +10,13 @@ public:
 	float K;
 
 	Angle toAngle(void);
-	void fromAngle(Angle);
-	void rotate(Angle);
+	void fromAngle(const Angle&);
+	void rotate(const Angle&);
+	void normalize(void);
 	float magnitude(void);
-	float dot(Vector);
-	Vector cross(Vector);
-	Vector(float=1, float=1, float=1);
+	float dot(const Vector&);
+	Vector cross(const Vector&);
+	Vector(float=0, float=0, float=0);
 };
 
 #endif
