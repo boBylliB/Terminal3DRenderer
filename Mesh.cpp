@@ -20,7 +20,7 @@ void Mesh::buildMesh(MeshFile mf) {
                 tri++;
             }
 
-            float input[3];
+            string input;
 
             switch (i) {
             case 0:
