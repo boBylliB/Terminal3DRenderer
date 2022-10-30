@@ -1,7 +1,11 @@
 #ifndef MESH_CPP	
 #define MESH_CPP
 
+#include <fstream>
 #include "Mesh.h"
+#include "RenderUtils.h"
+
+using namespace std;
 
 void Mesh::buildMesh(MeshFile mf) {
     int vert = 0;
@@ -10,7 +14,7 @@ void Mesh::buildMesh(MeshFile mf) {
     
     switch (mf.type) {
     case Filetype::TXT:
-        while (fin.good() && tri < MAXTRIS) {
+        while (mf.fin.good() && tri < MAXTRIS) {
             if (i > 2) {
                 i = 0;
                 vert++;
@@ -20,28 +24,26 @@ void Mesh::buildMesh(MeshFile mf) {
                 tri++;
             }
 
-            string input;
+            string inputStr;
+            mf.fin >> inputStr;
+            float input = stringToFloat(inputStr);
 
             switch (i) {
             case 0:
                 tris[tri].verts[vert].x = input;
                 break;
             case 1:
-                mesh->tris[tri].verts[vert].y = input;
+                tris[tri].verts[vert].y = input;
                 break;
             case 2:
-                mesh->tris[tri].verts[vert].z = input;
+                tris[tri].verts[vert].z = input;
                 break;
             }
             ++i;
         }
-        mesh->triCount = i + 1;
-        for (i = 0; i < mesh->triCount; ++i) {
-            vertVec.I = mesh->tris[i].verts[0].x;
-            vertVec.J = mesh->tris[i].verts[0].y;
-            vertVec.K = mesh->tris[i].verts[0].z;
-            mesh->tris[i].normal = calculateNormal(&mesh->tris[i]);
-            mesh->tris[i].D = dotProduct(mesh->tris[i].normal, vertVec);
+        for (i = 0; i < numTris; ++i) {
+            tris[i].calculateNormal();
+            tris[i].calculateD();
         }
         break;
     case Filetype::OBJ:

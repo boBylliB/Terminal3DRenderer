@@ -3,9 +3,9 @@
 
 #include <cmath>
 #include "Vector.h"
-#include "RenderMath.h"
+#include "RenderUtils.h"
 
-Vector::Vector(float i = 0, float j = 0, float k = 0) {
+Vector::Vector(float i, float j, float k) {
     I = i;
     J = j;
     K = k;
@@ -38,6 +38,8 @@ Angle Vector::toAngle(void) {
             a.theta = 180.0;
     }
     a.phi = radToDeg(acos(J / magnitude()));
+
+    return a;
 }
 void Vector::fromAngle(const Angle &a) {
     double magnitude = 0;
