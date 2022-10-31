@@ -47,7 +47,38 @@ void Mesh::buildMesh(MeshFile mf) {
         }
         break;
     case Filetype::OBJ:
+        int vertIdx = 0;
+        int triIdx = 0;
+        Point verts[MAXTRIS * 3];
+        while (mf.fin.good() && triIdx < MAXTRIS && vertIdx < MAXTRIS * 3) {
+            string line;
+            getline(mf.fin, line);
 
+            if (line.length() > 2 && line.at(0) == 'v' && line.at(1) == ' ') {
+                line = line.substr(2);
+                int split = 0;
+                int idx = 0;
+                for (int i = 0; i < line.length(); i++) {
+                    if (line.at(i) == ' ') {
+                        float value = stringToFloat(line.substr(split, i));
+                        switch (idx) {
+                        case 0:
+                            verts[vertIdx].x = value;
+                            break;
+                        case 1:
+                            verts[vertIdx].y = value;
+                            break;
+                        case 2:
+                            verts[vertIdx].z = value;
+                            break;
+                        }
+                        split = i + 1;
+                        idx++;
+                    }
+                }
+                vertIdx++;
+            }
+        }
         break;
     case Filetype::PLY:
 
