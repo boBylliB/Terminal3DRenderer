@@ -11,7 +11,11 @@ int main(void) {
 	string input;
 	cin >> input;
 
-	cout << stringToFloat(input);
+	cout.precision(1000);
+	cout << pow(10, input.length() - 1) << endl;
+	cout << stringToFloat(input) << endl;
+	cout << stringToDouble(input) << endl;
+	cout << stringToInt(input) << endl;
 
 	return 0;
 }

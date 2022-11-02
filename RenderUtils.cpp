@@ -15,18 +15,58 @@ float radToDeg(float rad)
 }
 float stringToFloat(string str) {
 	float output = 0;
-	bool negative = false;
-	int decimalPt = -1;
+	int decimalPt = str.find('.');
+	string intPortion;
+	string decPortion;
+
+	if (decimalPt != string::npos) {
+		intPortion = str.substr(0, decimalPt);
+		decPortion = str.substr(decimalPt + 1, str.length());
+	}
+	else {
+		intPortion = str;
+		decPortion = "0";
+	}
 	
+	int intValue = stringToInt(intPortion);
+	int decValue = stringToInt(decPortion);
+
+	output = intValue + decValue * pow(10, -1.0 * (float)decPortion.length());
+
+	return output;
+}
+double stringToDouble(string str) {
+	double output = 0;
+	int decimalPt = str.find('.');
+	string intPortion;
+	string decPortion;
+
+	if (decimalPt != string::npos) {
+		intPortion = str.substr(0, decimalPt);
+		decPortion = str.substr(decimalPt + 1, str.length());
+	}
+	else {
+		intPortion = str;
+		decPortion = "0";
+	}
+
+	int intValue = stringToInt(intPortion);
+	int decValue = stringToInt(decPortion);
+
+	output = intValue + decValue * pow(10, -1.0 * (double)decPortion.length());
+
+	return output;
+}
+int stringToInt(string str) {
+	int output = 0;
+	bool negative = false;
+
 	for (int idx = 0; idx < str.length(); idx++) {
 		int digitCalc = pow(10, str.length() - idx - 1);
 
 		switch (str.at(idx)) {
 		case '-':
 			negative = !negative;
-			break;
-		case '.':
-			decimalPt = idx;
 			break;
 		case '1':
 			output += 1 * digitCalc;
@@ -60,9 +100,6 @@ float stringToFloat(string str) {
 
 	if (negative)
 		output *= -1;
-
-	output *= pow(10, -1 * (int)(str.length() - decimalPt - 1));
-	output = (intPart(output) / 10) + decPart(output);
 
 	return output;
 }

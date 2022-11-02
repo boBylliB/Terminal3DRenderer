@@ -5,7 +5,7 @@
 #include "Vector.h"
 #include "RenderUtils.h"
 
-Vector::Vector(float i, float j, float k) {
+Vector::Vector(double i, double j, double k) {
     I = i;
     J = j;
     K = k;
@@ -67,22 +67,22 @@ void Vector::rotate(const Angle &a) {
 
     fromAngle(vecAngle);
 }
-float Vector::magnitude(void) {
+double Vector::magnitude(void) {
 	return sqrt(I*I + J*J + K*K);
 }
 void Vector::normalize(void) {
-	float mag = magnitude();
+	double mag = magnitude();
 	I /= mag;
 	J /= mag;
 	K /= mag;
 }
-float Vector::dot(const Vector &vec) {
+double Vector::dot(const Vector &vec) {
 	return vec.I * I + vec.J * J + vec.K * K;
 }
 Vector Vector::cross(const Vector &vec) {
-	float newI = J * vec.K - K * vec.J;
-	float newJ = K * vec.I - I * vec.K;
-	float newK = I * vec.J - J * vec.I;
+	double newI = J * vec.K - K * vec.J;
+	double newJ = K * vec.I - I * vec.K;
+	double newK = I * vec.J - J * vec.I;
 	Vector out(newI, newJ, newK);
 	return out;
 }

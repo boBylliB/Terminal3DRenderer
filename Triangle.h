@@ -8,7 +8,7 @@ class Triangle {
 public:
 	Point verts[3];
 	Vector normal;
-	float D;
+	double D;
 
 	bool checkWithin(const Point&);
 	void calculateNormal(void);

@@ -5,18 +5,18 @@
 
 class Vector {
 public:
-	float I;
-	float J;
-	float K;
+	double I;
+	double J;
+	double K;
 
 	Angle toAngle(void);
 	void fromAngle(const Angle&);
 	void rotate(const Angle&);
 	void normalize(void);
-	float magnitude(void);
-	float dot(const Vector&);
+	double magnitude(void);
+	double dot(const Vector&);
 	Vector cross(const Vector&);
-	Vector(float=0, float=0, float=0);
+	Vector(double=0, double=0, double=0);
 };
 
 #endif

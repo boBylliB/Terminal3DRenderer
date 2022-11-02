@@ -11,6 +11,9 @@ void Mesh::buildMesh(MeshFile mf) {
     int vert = 0;
     int tri = 0;
     int i = 0;
+    int vertIdx = 0;
+    int triIdx = 0;
+    Point* verts = new Point[MAXTRIS * 3]{};
     
     switch (mf.type) {
     case Filetype::TXT:
@@ -26,7 +29,7 @@ void Mesh::buildMesh(MeshFile mf) {
 
             string inputStr;
             mf.fin >> inputStr;
-            float input = stringToFloat(inputStr);
+            double input = stringToDouble(inputStr);
 
             switch (i) {
             case 0:
@@ -47,9 +50,6 @@ void Mesh::buildMesh(MeshFile mf) {
         }
         break;
     case Filetype::OBJ:
-        int vertIdx = 0;
-        int triIdx = 0;
-        Point verts[MAXTRIS * 3];
         while (mf.fin.good() && triIdx < MAXTRIS && vertIdx < MAXTRIS * 3) {
             string line;
             getline(mf.fin, line);
@@ -60,7 +60,7 @@ void Mesh::buildMesh(MeshFile mf) {
                 int idx = 0;
                 for (int i = 0; i < line.length(); i++) {
                     if (line.at(i) == ' ') {
-                        float value = stringToFloat(line.substr(split, i));
+                        double value = stringToDouble(line.substr(split, i));
                         switch (idx) {
                         case 0:
                             verts[vertIdx].x = value;
@@ -76,7 +76,46 @@ void Mesh::buildMesh(MeshFile mf) {
                         idx++;
                     }
                 }
+                if (idx < 3) {
+                    double value = stringToDouble(line.substr(split, i));
+                    switch (idx) {
+                    case 0:
+                        verts[vertIdx].x = value;
+                        break;
+                    case 1:
+                        verts[vertIdx].y = value;
+                        break;
+                    case 2:
+                        verts[vertIdx].z = value;
+                        break;
+                    }
+                }
                 vertIdx++;
+            }
+            if (line.length() > 2 && line.at(0) == 'f' && line.at(1) == ' ') {
+                line = line.substr(2);
+                bool validSplit = true;
+                int split = 0;
+                int idx = 0;
+                for (int i = 0; i < line.length(); i++) {
+                    if (line.at(i) == ' ' && !validSplit) {
+                        split = i + 1;
+                        validSplit = true;
+                    }
+                    if ((line.at(i) == '/' || line.at(i) == ' ') && validSplit) {
+                        validSplit = false;
+                        int value = stringToInt(line.substr(split, i));
+                        tris[triIdx].verts[idx] = verts[value];
+                        if (line.at(i) == ' ')
+                            split = i + 1;
+                        idx++;
+                    }
+                }
+                if (idx < 3 && validSplit) {
+                    int value = stringToInt(line.substr(split, i));
+                    tris[triIdx].verts[idx] = verts[value];
+                }
+                triIdx++;
             }
         }
         break;
@@ -87,6 +126,8 @@ void Mesh::buildMesh(MeshFile mf) {
 
         break;
     }
+
+    delete[] verts;
 }
 
 #endif

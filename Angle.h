@@ -2,8 +2,8 @@
 #define ANGLE_H
 
 typedef struct {
-	float theta;
-	float phi;
+	double theta;
+	double phi;
 } Angle;
 
 #endif
