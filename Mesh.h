@@ -11,6 +11,7 @@ public:
 	int numTris;
 
 	void buildMesh(MeshFile);
+	Point getCenter(void);
 };
 
 #endif
