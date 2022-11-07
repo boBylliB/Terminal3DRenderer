@@ -76,6 +76,13 @@ void Vector::normalize(void) {
 	J /= mag;
 	K /= mag;
 }
+void Vector::scale(const double factor) {
+    if (factor != 0) {
+        I *= factor;
+        J *= factor;
+        K *= factor;
+    }
+}
 double Vector::dot(const Vector &vec) {
 	return vec.I * I + vec.J * J + vec.K * K;
 }
@@ -85,6 +92,20 @@ Vector Vector::cross(const Vector &vec) {
 	double newK = I * vec.J - J * vec.I;
 	Vector out(newI, newJ, newK);
 	return out;
+}
+void Vector::fromPoint(const Point& pt) {
+    I = pt.x;
+    J = pt.y;
+    K = pt.z;
+}
+void Vector::difference(const Point& a, const Point& b) {
+    I = b.x - a.x;
+    J = b.y - a.y;
+    K = b.z - a.z;
+}
+Point Vector::toPoint(void) {
+    Point pt = { I, J, K };
+    return pt;
 }
 
 #endif
