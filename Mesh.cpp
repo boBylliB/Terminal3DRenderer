@@ -2,6 +2,7 @@
 #define MESH_CPP
 
 #include <fstream>
+#include <vector>
 #include "Mesh.h"
 #include "RenderUtils.h"
 
@@ -13,7 +14,7 @@ void Mesh::buildMesh(MeshFile mf) {
     int i = 0;
     int vertIdx = 0;
     int triIdx = 0;
-    Point* verts = new Point[MAXTRIS * 3]{};
+    vector<Point> verts = vector<Point>();
     
     switch (mf.type) {
     case Filetype::TXT:
@@ -50,7 +51,7 @@ void Mesh::buildMesh(MeshFile mf) {
         }
         break;
     case Filetype::OBJ:
-        while (mf.fin.good() && triIdx < MAXTRIS && vertIdx < MAXTRIS * 3) {
+        while (mf.fin.good()) {
             string line;
             getline(mf.fin, line);
 
@@ -126,8 +127,6 @@ void Mesh::buildMesh(MeshFile mf) {
 
         break;
     }
-
-    delete[] verts;
 }
 
 #endif

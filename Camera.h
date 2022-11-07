@@ -1,10 +1,12 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <vector>
 #include "Defines.h"
 #include "Point.h"
 #include "Angle.h"
 #include "Vector.h"
+#include "Mesh.h"
 
 class Camera {
 private:
@@ -20,7 +22,7 @@ public:
 	Vector getDirection(void);
 	Angle getFOV(void);
 	double getRoll(void);
-	int[] getOutputSize(void);
+	int* getOutputSize(void); // Returns a 2 element array, height in index 0 and width in index 1
 
 	// Setter functions
 	Camera(Point, Vector, double = FOV, double = 0, int = HEIGHT, int = WIDTH);
@@ -34,7 +36,7 @@ public:
 	void move(Vector); // Adjusts the position by the given vector
 	void rotate(Angle); // Adjusts the direction by rotating the current view vector by the given angle
 	void zoom(double); // Adjusts the FOV by the direct inverse of the given double (so that positive zoom is "zoom in")
-	void roll(double); // Adjusts the roll by the given double
+	void rollAdjust(double); // Adjusts the roll by the given double
 	void orbit(Angle, Point); // Rotates the camera around the given point while keeping the radius the same, sets the view to point at the orbit center
 	void orbitCurrent(Angle, double); // Runs the orbit function with a point generated from the current view direction and the given radius
 

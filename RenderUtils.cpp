@@ -6,10 +6,10 @@
 
 using namespace std;
 
-float degToRad(float deg) {
+double degToRad(double deg) {
 	return (deg / 180.0) * atan(1.0) * 4.0;
 }
-float radToDeg(float rad)
+double radToDeg(double rad)
 {
 	return (rad / (atan(1.0) * 4.0)) * 180.0;
 }
@@ -103,11 +103,11 @@ int stringToInt(string str) {
 
 	return output;
 }
-int intPart(float f) {
-	return (int)f;
+int intPart(double d) {
+	return (int)d;
 }
-float decPart(float f) {
-	return f - intPart(f);
+double decPart(double d) {
+	return d - intPart(d);
 }
 
 #endif

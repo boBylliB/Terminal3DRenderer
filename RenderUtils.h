@@ -3,12 +3,12 @@
 
 #include <string>
 
-float degToRad(float);
-float radToDeg(float);
+double degToRad(double);
+double radToDeg(double);
 float stringToFloat(std::string);
 double stringToDouble(std::string);
 int stringToInt(std::string);
-int intPart(float);
-float decPart(float);
+int intPart(double);
+double decPart(double);
 
 #endif
