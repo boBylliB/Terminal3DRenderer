@@ -21,8 +21,8 @@ void Triangle::calculateNormal(void) {
     Vector rAB(verts[1].x - verts[0].x, verts[1].y - verts[0].y, verts[1].z - verts[0].z);
     Vector rBC(verts[2].x - verts[1].x, verts[2].y - verts[1].y, verts[2].z - verts[1].z);
     Vector cross = rAB.cross(rBC);
-    Vector norm(cross.I / cross.magnitude(), cross.J / cross.magnitude(), cross.K / cross.magnitude());
-    normal = norm;
+    cross.normalize();
+    normal = cross;
 }
 void Triangle::calculateD(void) {
     Vector vertVec(verts[0].x, verts[0].y, verts[0].z);

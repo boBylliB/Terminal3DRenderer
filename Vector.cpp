@@ -52,6 +52,7 @@ void Vector::fromAngle(const Angle &a) {
 }
 void Vector::rotate(const Angle &a) {
     Angle vecAngle = toAngle();
+    double mag = magnitude();
     vecAngle.phi += a.phi;
     vecAngle.theta += a.theta;
 
@@ -66,6 +67,7 @@ void Vector::rotate(const Angle &a) {
         vecAngle.theta + 360;
 
     fromAngle(vecAngle);
+    scale(mag);
 }
 double Vector::magnitude(void) {
 	return sqrt(I*I + J*J + K*K);

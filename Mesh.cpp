@@ -128,5 +128,46 @@ void Mesh::buildMesh(MeshFile mf) {
         break;
     }
 }
+void Mesh::calcCenter(void) {
+    double xMin = 0;
+    double xMax = 0;
+    double yMin = 0;
+    double yMax = 0;
+    double zMin = 0;
+    double zMax = 0;
+
+    for (int i = 0; i < numTris; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            Point pt = tris[i].verts[j];
+            if (i == 0 && j == 0) {
+                xMin = pt.x;
+                xMax = pt.x;
+                yMin = pt.y;
+                yMax = pt.y;
+                zMin = pt.z;
+                zMax = pt.z;
+            }
+            if (pt.x < xMin)
+                xMin = pt.x;
+            if (pt.x > xMax)
+                xMax = pt.x;
+            if (pt.y < yMin)
+                yMin = pt.y;
+            if (pt.y > yMax)
+                yMax = pt.y;
+            if (pt.z < zMin)
+                zMin = pt.z;
+            if (pt.z > zMax)
+                zMax = pt.z;
+        }
+    }
+
+    center.x = (xMin + xMax) / 2;
+    center.y = (yMin + yMax) / 2;
+    center.z = (zMin + zMax) / 2;
+}
+std::vector<double> calculateIntersectDistances(const Point origin, const std::vector<Vector> rays) {
+
+}
 
 #endif

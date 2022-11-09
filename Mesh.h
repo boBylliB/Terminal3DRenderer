@@ -10,10 +10,11 @@ class Mesh {
 public:
 	std::vector<Triangle> tris;
 	int numTris;
+	Point center;
 
 	void buildMesh(MeshFile);
-	std::vector<double> calculateIntersectDistances(const Point origin, const std::vector<Vector> rays, const int rayCount);
-	Point getCenter(void);
+	std::vector<double> calculateIntersectDistances(const Point, const std::vector<Vector>);
+	void calcCenter(void);
 };
 
 #endif
