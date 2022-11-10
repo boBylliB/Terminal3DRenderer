@@ -109,7 +109,7 @@ void Camera::visualizeAngle(void) {
 }
 // Calculates a snapshot of the mesh from this camera and displays it to the screen
 void Camera::display(const Mesh& m) {
-
+	// Create 9 rays per pixel
 }
 
 #endif

@@ -166,8 +166,48 @@ void Mesh::calcCenter(void) {
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
 }
-std::vector<double> calculateIntersectDistances(const Point origin, const std::vector<Vector> rays) {
+std::vector<double> Mesh::calculateIntersectDistances(const Point origin, const std::vector<Vector> rays) {
+    // Get the normal of the triangle
+    // Get D, the dot product of the normal and any point on the triangle
+    // Distance = (nd - origin dot normal) / (normalized ray dot normal)
+    // If the distance is negative, it is behind the origin of the ray
+    // Find the point of intersection by adding distance * normalized ray to the origin coordinates
+    // Check for intersection within triangle
+    std::vector<double> distances;
+    for (int rayIdx = 0; rayIdx < rays.size(); rayIdx++) {
+        std::vector<double> rayDistances;
+        for (int triIdx = 0; triIdx < tris.size(); triIdx++) {
+            Vector originVector;
+            Vector vertVector;
+            Vector ray = rays[rayIdx];
+            originVector.fromPoint(origin);
+            vertVector.fromPoint(tris[triIdx].verts[0]);
+            ray.normalize();
+            
+            double dist = (tris[triIdx].D - originVector.dot(vertVector)) / ray.dot(tris[triIdx].normal);
+            if (dist > 0) {
+                ray.scale(dist);
+                Point diff = ray.toPoint();
+                Point intersection;
+                intersection.x = origin.x + diff.x;
+                intersection.y = origin.y + diff.y;
+                intersection.z = origin.z + diff.z;
 
+                if (tris[triIdx].checkWithin(intersection))
+                    rayDistances.push_back(dist);
+            }
+        }
+
+        double min = -1;
+        for (double dist : rayDistances) {
+            if (dist > 0) {
+                if (min == -1 || dist < min)
+                    min = dist;
+            }
+        }
+        distances[rayIdx] = min;
+    }
+    return distances;
 }
 
 #endif
