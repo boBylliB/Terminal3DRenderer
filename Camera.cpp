@@ -109,7 +109,11 @@ void Camera::visualizeAngle(void) {
 }
 // Calculates a snapshot of the mesh from this camera and displays it to the screen
 void Camera::display(const Mesh& m) {
-	// Create 9 rays per pixel
+	// Calculate the angle between pixels
+
+	// Create 9 rays, evenly spaced, per on-screen "pixel"
+	// Calculate the intersection distances for each ray
+	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled by a linear falloff
 }
 
 #endif
