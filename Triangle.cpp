@@ -3,7 +3,7 @@
 
 #include "Triangle.h"
 
-bool Triangle::checkWithin(const Point &pt) {
+bool Triangle::checkWithin(const Point &pt) const {
     Vector edgeA(verts[1].x - verts[0].x, verts[1].y - verts[0].y, verts[1].z - verts[0].z);
     Vector edgeB(verts[2].x - verts[1].x, verts[2].y - verts[1].y, verts[2].z - verts[1].z);
     Vector edgeC(verts[0].x - verts[2].x, verts[0].y - verts[2].y, verts[0].z - verts[2].z);

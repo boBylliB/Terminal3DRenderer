@@ -166,7 +166,7 @@ void Mesh::calcCenter(void) {
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
 }
-std::vector<double> Mesh::calculateIntersectDistances(const Point origin, const std::vector<Vector> rays) {
+std::vector<double> Mesh::calculateIntersectDistances(const Point origin, const std::vector<Vector> rays) const {
     // Get the normal of the triangle
     // Get D, the dot product of the normal and any point on the triangle
     // Distance = (nd - origin dot normal) / (normalized ray dot normal)

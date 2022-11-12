@@ -23,7 +23,7 @@ int* Camera::getOutputSize(void) {
 }
 
 // Setter Functions
-Camera::Camera(const Point& position, const Vector& direction, const double fieldOfView = FOV, const double roll = 0, const int height = HEIGHT, const int width = WIDTH) {
+Camera::Camera(const Point& position, const Vector& direction, const double fieldOfView, const double roll, const int height, const int width) {
 	this->position = position;
 	this->roll = roll;
 	this->outputHeight = height;
@@ -49,7 +49,7 @@ void Camera::setFOV(const double fieldOfView) {
 void Camera::setRoll(const double r) {
 	roll = r;
 }
-void Camera::setOutput(const int height, const int width = -1) {
+void Camera::setOutput(const int height, const int width) {
 	if (width < 1)
 		outputWidth = height;
 	else
@@ -91,8 +91,7 @@ void Camera::orbit(const Angle& a, const Point& origin) {
 	direction.difference(position, origin);
 	rotate(a);
 
-	Vector diff;
-	diff.difference(direction.toPoint(), origin);
+	Vector diff(direction.toPoint(), origin);
 	move(diff);
 }
 // Runs the orbit function with a point generated from the current view direction and the given radius
@@ -110,10 +109,30 @@ void Camera::visualizeAngle(void) {
 // Calculates a snapshot of the mesh from this camera and displays it to the screen
 void Camera::display(const Mesh& m) {
 	// Calculate the angle between pixels
-
+	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
 	// Create 9 rays, evenly spaced, per on-screen "pixel"
+	angleBetween /= 9;
+	
+	int numRays = outputHeight * outputWidth * 9;
+	Angle startingAngle((angleBetween.theta * (numRays / 2) * -1), (angleBetween.phi * (numRays / 2) * -1));
+	startingAngle += direction.toAngle();
+
+	std::vector<Vector> rays;
+
+	for (int row = 0; row < outputHeight * 3; row++) {
+		for (int col = 0; col < outputWidth * 3; col++) {
+			Angle rayAngle = startingAngle;
+			rayAngle.theta += col * angleBetween.theta;
+			rayAngle.phi += row * angleBetween.phi;
+
+			Vector ray(rayAngle);
+			rays.push_back(ray);
+		}
+	}
 	// Calculate the intersection distances for each ray
-	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled by a linear falloff
+	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays);
+	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
+
 }
 
 #endif

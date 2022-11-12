@@ -10,18 +10,35 @@ public:
 	double J;
 	double K;
 
-	Angle toAngle(void);
+	Vector(const double = 0, const double = 0, const double = 0);
+	Vector(const Angle&);
+	Vector(const Point&);
+	Vector(const Point&, const Point&);
+
+	Vector operator+(const Vector&);
+	Vector& operator+=(const Vector&);
+	Vector& operator+=(const Point&);
+	Vector operator-(const Vector&);
+	Vector& operator-=(const Vector&);
+	Vector& operator-=(const Point&);
+	Vector operator*(const Vector&);
+	Vector& operator*=(const Vector&);
+	Vector& operator*=(const Point&);
+	Vector operator/(const Vector&);
+	Vector& operator/=(const Vector&);
+	Vector& operator/=(const Point&);
+
+	Angle toAngle(void) const;
 	void fromAngle(const Angle&);
 	void rotate(const Angle&);
 	void normalize(void);
 	void scale(const double);
-	double magnitude(void);
-	double dot(const Vector&);
-	Vector cross(const Vector&);
+	double magnitude(void) const;
+	double dot(const Vector&) const;
+	Vector cross(const Vector&) const;
 	void fromPoint(const Point&);
 	void difference(const Point&, const Point&);
-	Point toPoint(void);
-	Vector(double=0, double=0, double=0);
+	Point toPoint(void) const;
 };
 
 #endif

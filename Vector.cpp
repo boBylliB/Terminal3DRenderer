@@ -5,12 +5,99 @@
 #include "Vector.h"
 #include "RenderUtils.h"
 
-Vector::Vector(double i, double j, double k) {
+Vector::Vector(const double i, const double j, const double k) {
     I = i;
     J = j;
     K = k;
 }
-Angle Vector::toAngle(void) {
+Vector::Vector(const Angle& a) {
+    fromAngle(a);
+}
+Vector::Vector(const Point& pt) {
+    fromPoint(pt);
+}
+Vector::Vector(const Point& pt1, const Point& pt2) {
+    difference(pt1, pt2);
+}
+
+Vector Vector::operator+(const Vector& vec) {
+    Vector output(I + vec.I, J + vec.J, K + vec.K);
+
+    return output;
+}
+Vector& Vector::operator+=(const Vector& vec) {
+    I += vec.I;
+    J += vec.J;
+    K += vec.K;
+
+    return *this;
+}
+Vector& Vector::operator+=(const Point& pt) {
+    I += pt.x;
+    J += pt.y;
+    K += pt.z;
+
+    return *this;
+}
+Vector Vector::operator-(const Vector& vec) {
+    Vector output(I - vec.I, J - vec.J, K - vec.K);
+
+    return output;
+}
+Vector& Vector::operator-=(const Vector& vec) {
+    I -= vec.I;
+    J -= vec.J;
+    K -= vec.K;
+
+    return *this;
+}
+Vector& Vector::operator-=(const Point& pt) {
+    I -= pt.x;
+    J -= pt.y;
+    K -= pt.z;
+
+    return *this;
+}
+Vector Vector::operator*(const Vector& vec) {
+    Vector output(I * vec.I, J * vec.J, K * vec.K);
+
+    return output;
+}
+Vector& Vector::operator*=(const Vector& vec) {
+    I *= vec.I;
+    J *= vec.J;
+    K *= vec.K;
+
+    return *this;
+}
+Vector& Vector::operator*=(const Point& pt) {
+    I *= pt.x;
+    J *= pt.y;
+    K *= pt.z;
+
+    return *this;
+}
+Vector Vector::operator/(const Vector& vec) {
+    Vector output(I / vec.I, J / vec.J, K / vec.K);
+
+    return output;
+}
+Vector& Vector::operator/=(const Vector& vec) {
+    I /= vec.I;
+    J /= vec.J;
+    K /= vec.K;
+
+    return *this;
+}
+Vector& Vector::operator/=(const Point& pt) {
+    I /= pt.x;
+    J /= pt.y;
+    K /= pt.z;
+
+    return *this;
+}
+
+Angle Vector::toAngle(void) const {
     Angle a;
 
     if (K < 0.00001 && K > -0.00001) {
@@ -69,7 +156,7 @@ void Vector::rotate(const Angle &a) {
     fromAngle(vecAngle);
     scale(mag);
 }
-double Vector::magnitude(void) {
+double Vector::magnitude(void) const {
 	return sqrt(I*I + J*J + K*K);
 }
 void Vector::normalize(void) {
@@ -85,10 +172,10 @@ void Vector::scale(const double factor) {
         K *= factor;
     }
 }
-double Vector::dot(const Vector &vec) {
+double Vector::dot(const Vector &vec) const {
 	return vec.I * I + vec.J * J + vec.K * K;
 }
-Vector Vector::cross(const Vector &vec) {
+Vector Vector::cross(const Vector &vec) const {
 	double newI = J * vec.K - K * vec.J;
 	double newJ = K * vec.I - I * vec.K;
 	double newK = I * vec.J - J * vec.I;
@@ -105,7 +192,7 @@ void Vector::difference(const Point& a, const Point& b) {
     J = b.y - a.y;
     K = b.z - a.z;
 }
-Point Vector::toPoint(void) {
+Point Vector::toPoint(void) const {
     Point pt = { I, J, K };
     return pt;
 }
