@@ -132,7 +132,30 @@ void Camera::display(const Mesh& m) {
 	// Calculate the intersection distances for each ray
 	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays);
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
-
+	std::vector<double> pixelBrightness;
+	for (int pixelY = 0; pixelY < outputHeight; pixelY++) {
+		for (int subY = 0; subY < 3; subY++) {
+			for (int pixelX = 0; pixelX < outputWidth; pixelX++) {
+				for (int subX = 0; subX < 3; subX++) {
+					pixelBrightness[pixelY + pixelX] += 1 / (FALLOFF * intersectDistances[pixelY * 3 + pixelX * 3 + subY + subX]);
+				}
+			}
+		}
+	}
+	// Display the calculated image to the screen
+	for (int row = 0; row < pixelBrightness.size(); row++) {
+		for (int col = 0; col < pixelBrightness.size(); col++) {
+			double brightness = pixelBrightness[row + col];
+			std::string grayscale = GRAYSCALE;
+			if (brightness - intPart(brightness) >= 0.5)
+				brightness += 1;
+			int brightInt = brightness;
+			if (brightInt > grayscale.length() - 1)
+				brightInt = grayscale.length() - 1;
+			std::cout << grayscale[brightInt];
+		}
+		std::cout << std::endl;
+	}
 }
 
 #endif
