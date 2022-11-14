@@ -15,23 +15,30 @@
 using namespace std;
 
 int main(void) {
-	MeshFile mf;
-	Mesh m;
-
-	m.buildMesh(mf);
-
-	for (int i = 0; i < m.numTris; i++) {
-		for (int j = 0; j < 3; j++) {
-			cout << m.tris[i].verts[j].x << " " << m.tris[i].verts[j].y << " " << m.tris[i].verts[j].z << endl;
-		}
-		cout << endl;
+	int outputHeight = 10;
+	int outputWidth = 10;
+	vector<double> intersectDistances(outputHeight * outputWidth * 9, 0.0);
+	for (int i = 50; i < 100; i++) {
+		intersectDistances[i] = 1;
 	}
 
-	Point camPos(7, 0, 0);
-	Vector camDir(camPos, m.center);
-
-	Camera cam(camPos, camDir, 30, 0, 100, 100);
-	cam.display(m);
+	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
+	for (int row = 0; row < outputHeight * 3; row++) {
+		for (int col = 0; col < outputWidth * 3; col++) {
+			if (intersectDistances[row*outputWidth + col] > 0)
+				pixelBrightness[(row / 3) * outputWidth + (col / 3)] += 1.0;
+		}
+	}
+	// Display the calculated image to the screen
+	for (int row = 0; row < outputHeight; row++) {
+		for (int col = 0; col < outputWidth; col++) {
+			if (pixelBrightness[row*outputWidth + col] > 0)
+				std::cout << "@";
+			else
+				std::cout << " ";
+		}
+		std::cout << std::endl;
+	}
 
 	return 0;
 }

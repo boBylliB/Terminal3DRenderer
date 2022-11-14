@@ -130,15 +130,17 @@ void Camera::display(const Mesh& m) {
 	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
 	for (int row = 0; row < outputHeight * 3; row++) {
 		for (int col = 0; col < outputWidth * 3; col++) {
-			if (intersectDistances[row + col] > 0)
-				pixelBrightness[(row / 3) + (col / 3)] += 1.0;
+			if (intersectDistances[row*outputWidth + col] > 0)
+				pixelBrightness[(row / 3)*outputWidth + (col / 3)] += 1.0;
 		}
 	}
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
-			if (pixelBrightness[row + col] > 0)
+			if (pixelBrightness[row * outputWidth + col] > 0)
 				std::cout << "@";
+			else
+				std::cout << " ";
 		}
 		std::cout << std::endl;
 	}

@@ -1,3 +1,4 @@
+// Container Class
 #ifndef MESH_H
 #define MESH_H
 
@@ -11,6 +12,9 @@ public:
 	std::vector<Triangle> tris;
 	int numTris;
 	Point center;
+
+	Mesh(void);
+	Mesh(MeshFile&);
 
 	void buildMesh(MeshFile&);
 	void calcCenter(void);

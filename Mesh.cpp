@@ -9,6 +9,14 @@
 
 using namespace std;
 
+Mesh::Mesh(void) {
+    MeshFile mf;
+    buildMesh(mf);
+}
+Mesh::Mesh(MeshFile& mf) {
+    buildMesh(mf);
+}
+
 void Mesh::buildMesh(MeshFile& mf) {
     int vert = 0;
     int tri = 0;
