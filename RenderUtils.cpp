@@ -21,7 +21,7 @@ float stringToFloat(string str) {
 
 	if (decimalPt != string::npos) {
 		intPortion = str.substr(0, decimalPt);
-		decPortion = str.substr(decimalPt + 1, str.length());
+		decPortion = str.substr(decimalPt + 1);
 	}
 	else {
 		intPortion = str;
@@ -43,7 +43,7 @@ double stringToDouble(string str) {
 
 	if (decimalPt != string::npos) {
 		intPortion = str.substr(0, decimalPt);
-		decPortion = str.substr(decimalPt + 1, str.length());
+		decPortion = str.substr(decimalPt + 1);
 	}
 	else {
 		intPortion = str;

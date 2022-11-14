@@ -5,14 +5,14 @@
 #include <vector>
 #include "Mesh.h"
 #include "RenderUtils.h"
+#include "QuickSort.h"
 
 using namespace std;
 
-void Mesh::buildMesh(MeshFile mf) {
+void Mesh::buildMesh(MeshFile& mf) {
     int vert = 0;
     int tri = 0;
     int i = 0;
-    int vertIdx = 0;
     int triIdx = 0;
     vector<Point> verts = vector<Point>();
     
@@ -32,6 +32,7 @@ void Mesh::buildMesh(MeshFile mf) {
             mf.fin >> inputStr;
             double input = stringToDouble(inputStr);
 
+            Triangle currentTri;
             switch (i) {
             case 0:
                 tris[tri].verts[vert].x = input;
@@ -45,9 +46,9 @@ void Mesh::buildMesh(MeshFile mf) {
             }
             ++i;
         }
+        numTris = tris.size();
         for (i = 0; i < numTris; ++i) {
             tris[i].calculateNormal();
-            tris[i].calculateD();
         }
         break;
     case Filetype::OBJ:
@@ -57,20 +58,21 @@ void Mesh::buildMesh(MeshFile mf) {
 
             if (line.length() > 2 && line.at(0) == 'v' && line.at(1) == ' ') {
                 line = line.substr(2);
+                Point currentPt;
                 int split = 0;
                 int idx = 0;
                 for (int i = 0; i < line.length(); i++) {
                     if (line.at(i) == ' ') {
-                        double value = stringToDouble(line.substr(split, i));
+                        double value = stringToDouble(line.substr(split, i - split));
                         switch (idx) {
                         case 0:
-                            verts[vertIdx].x = value;
+                            currentPt.x = value;
                             break;
                         case 1:
-                            verts[vertIdx].y = value;
+                            currentPt.y = value;
                             break;
                         case 2:
-                            verts[vertIdx].z = value;
+                            currentPt.z = value;
                             break;
                         }
                         split = i + 1;
@@ -78,47 +80,51 @@ void Mesh::buildMesh(MeshFile mf) {
                     }
                 }
                 if (idx < 3) {
-                    double value = stringToDouble(line.substr(split, i));
+                    double value = stringToDouble(line.substr(split, i - split));
                     switch (idx) {
                     case 0:
-                        verts[vertIdx].x = value;
+                        currentPt.x = value;
                         break;
                     case 1:
-                        verts[vertIdx].y = value;
+                        currentPt.y = value;
                         break;
                     case 2:
-                        verts[vertIdx].z = value;
+                        currentPt.z = value;
                         break;
                     }
                 }
-                vertIdx++;
+                verts.push_back(currentPt);
             }
             if (line.length() > 2 && line.at(0) == 'f' && line.at(1) == ' ') {
                 line = line.substr(2);
                 bool validSplit = true;
                 int split = 0;
                 int idx = 0;
+                Triangle currentTri;
                 for (int i = 0; i < line.length(); i++) {
-                    if (line.at(i) == ' ' && !validSplit) {
-                        split = i + 1;
-                        validSplit = true;
-                    }
                     if ((line.at(i) == '/' || line.at(i) == ' ') && validSplit) {
                         validSplit = false;
-                        int value = stringToInt(line.substr(split, i));
-                        tris[triIdx].verts[idx] = verts[value];
+                        int value = stringToInt(line.substr(split, i - split)) - 1;
+                        currentTri.verts[idx] = verts[value];
                         if (line.at(i) == ' ')
                             split = i + 1;
                         idx++;
                     }
+                    else if (line.at(i) == ' ' && !validSplit) {
+                        split = i + 1;
+                        validSplit = true;
+                    }
                 }
                 if (idx < 3 && validSplit) {
-                    int value = stringToInt(line.substr(split, i));
-                    tris[triIdx].verts[idx] = verts[value];
+                    int value = stringToInt(line.substr(split, i - split)) - 1;
+                    currentTri.verts[idx] = verts[value];
                 }
+                currentTri.calculateNormal();
+                tris.push_back(currentTri);
                 triIdx++;
             }
         }
+        numTris = tris.size();
         break;
     case Filetype::PLY:
 
@@ -127,6 +133,8 @@ void Mesh::buildMesh(MeshFile mf) {
 
         break;
     }
+
+    calcCenter();
 }
 void Mesh::calcCenter(void) {
     double xMin = 0;
@@ -166,10 +174,10 @@ void Mesh::calcCenter(void) {
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
 }
-std::vector<double> Mesh::calculateIntersectDistances(const Point origin, const std::vector<Vector> rays) const {
+std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const std::vector<Vector> rays) const {
     // Get the normal of the triangle
-    // Get D, the dot product of the normal and any point on the triangle
-    // Distance = (nd - origin dot normal) / (normalized ray dot normal)
+    // Get the vector from any point on the triangle to the origin
+    // Distance = (normal dot (triangle to origin)) / (normal dot normalized ray)
     // If the distance is negative, it is behind the origin of the ray
     // Find the point of intersection by adding distance * normalized ray to the origin coordinates
     // Check for intersection within triangle
@@ -177,35 +185,23 @@ std::vector<double> Mesh::calculateIntersectDistances(const Point origin, const 
     for (int rayIdx = 0; rayIdx < rays.size(); rayIdx++) {
         std::vector<double> rayDistances;
         for (int triIdx = 0; triIdx < tris.size(); triIdx++) {
-            Vector originVector;
-            Vector vertVector;
-            Vector ray = rays[rayIdx];
-            originVector.fromPoint(origin);
-            vertVector.fromPoint(tris[triIdx].verts[0]);
-            ray.normalize();
-            
-            double dist = (tris[triIdx].D - originVector.dot(vertVector)) / ray.dot(tris[triIdx].normal);
-            if (dist > 0) {
-                ray.scale(dist);
-                Point diff = ray.toPoint();
-                Point intersection;
-                intersection.x = origin.x + diff.x;
-                intersection.y = origin.y + diff.y;
-                intersection.z = origin.z + diff.z;
-
-                if (tris[triIdx].checkWithin(intersection))
-                    rayDistances.push_back(dist);
+            if (tris[triIdx].checkWithin(rays[rayIdx], origin)) {
+                rayDistances.push_back(1.0);
             }
         }
-
-        double min = -1;
+        
+        double min = DBL_MAX;
+        bool set = false;
         for (double dist : rayDistances) {
-            if (dist > 0) {
-                if (min == -1 || dist < min)
-                    min = dist;
+            if (dist < min) {
+                min = dist;
+                set = true;
             }
         }
-        distances[rayIdx] = min;
+        if (set)
+            distances.push_back(min);
+        else
+            distances.push_back(-1);
     }
     return distances;
 }

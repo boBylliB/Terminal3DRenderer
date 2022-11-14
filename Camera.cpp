@@ -102,19 +102,14 @@ void Camera::orbitCurrent(const Angle& a, const double radius) {
 }
 
 // Core functions (and any functions that are too complex to be considered "utility")
-// Displays 3 "compasses" that show the current view direction and roll
-void Camera::visualizeAngle(void) {
-
-}
 // Calculates a snapshot of the mesh from this camera and displays it to the screen
 void Camera::display(const Mesh& m) {
 	// Calculate the angle between pixels
 	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
 	// Create 9 rays, evenly spaced, per on-screen "pixel"
-	angleBetween /= 9;
+	angleBetween /= 3;
 	
-	int numRays = outputHeight * outputWidth * 9;
-	Angle startingAngle((angleBetween.theta * (numRays / 2) * -1), (angleBetween.phi * (numRays / 2) * -1));
+	Angle startingAngle((angleBetween.theta * (3.0 * outputWidth / 2.0) * -1.0), (angleBetween.phi * (3.0 * outputHeight / 2.0) * -1.0));
 	startingAngle += direction.toAngle();
 
 	std::vector<Vector> rays;
@@ -132,27 +127,18 @@ void Camera::display(const Mesh& m) {
 	// Calculate the intersection distances for each ray
 	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays);
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
-	std::vector<double> pixelBrightness;
-	for (int pixelY = 0; pixelY < outputHeight; pixelY++) {
-		for (int subY = 0; subY < 3; subY++) {
-			for (int pixelX = 0; pixelX < outputWidth; pixelX++) {
-				for (int subX = 0; subX < 3; subX++) {
-					pixelBrightness[pixelY + pixelX] += 1 / (FALLOFF * intersectDistances[pixelY * 3 + pixelX * 3 + subY + subX]);
-				}
-			}
+	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
+	for (int row = 0; row < outputHeight * 3; row++) {
+		for (int col = 0; col < outputWidth * 3; col++) {
+			if (intersectDistances[row + col] > 0)
+				pixelBrightness[(row / 3) + (col / 3)] += 1.0;
 		}
 	}
 	// Display the calculated image to the screen
-	for (int row = 0; row < pixelBrightness.size(); row++) {
-		for (int col = 0; col < pixelBrightness.size(); col++) {
-			double brightness = pixelBrightness[row + col];
-			std::string grayscale = GRAYSCALE;
-			if (brightness - intPart(brightness) >= 0.5)
-				brightness += 1;
-			int brightInt = brightness;
-			if (brightInt > grayscale.length() - 1)
-				brightInt = grayscale.length() - 1;
-			std::cout << grayscale[brightInt];
+	for (int row = 0; row < outputHeight; row++) {
+		for (int col = 0; col < outputWidth; col++) {
+			if (pixelBrightness[row + col] > 0)
+				std::cout << "@";
 		}
 		std::cout << std::endl;
 	}

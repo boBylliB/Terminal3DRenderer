@@ -15,6 +15,11 @@ Angle Angle::operator+(const Angle& a) {
 
 	return output;
 }
+Angle Angle::operator+(const double num) {
+	Angle output(theta + num, phi + num);
+
+	return output;
+}
 Angle& Angle::operator+=(const Angle& a) {
 	theta += a.theta;
 	phi += a.phi;
@@ -23,8 +28,21 @@ Angle& Angle::operator+=(const Angle& a) {
 
 	return *this;
 }
+Angle& Angle::operator+=(const double num) {
+	theta += num;
+	phi += num;
+
+	clamp();
+
+	return *this;
+}
 Angle Angle::operator-(const Angle& a) {
 	Angle output(theta - a.theta, phi - a.phi);
+
+	return output;
+}
+Angle Angle::operator-(const double num) {
+	Angle output(theta - num, phi - num);
 
 	return output;
 }
@@ -36,8 +54,21 @@ Angle& Angle::operator-=(const Angle& a) {
 
 	return *this;
 }
+Angle& Angle::operator-=(const double num) {
+	theta -= num;
+	phi -= num;
+
+	clamp();
+
+	return *this;
+}
 Angle Angle::operator*(const Angle& a) {
 	Angle output(theta * a.theta, phi * a.phi);
+
+	return output;
+}
+Angle Angle::operator*(const double num) {
+	Angle output(theta * num, phi * num);
 
 	return output;
 }
@@ -49,14 +80,35 @@ Angle& Angle::operator*=(const Angle& a) {
 
 	return *this;
 }
+Angle& Angle::operator*=(const double num) {
+	theta *= num;
+	phi *= num;
+
+	clamp();
+
+	return *this;
+}
 Angle Angle::operator/(const Angle& a) {
 	Angle output(theta / a.theta, phi / a.phi);
+
+	return output;
+}
+Angle Angle::operator/(const double num) {
+	Angle output(theta / num, phi / num);
 
 	return output;
 }
 Angle& Angle::operator/=(const Angle& a) {
 	theta /= a.theta;
 	phi /= a.phi;
+
+	clamp();
+
+	return *this;
+}
+Angle& Angle::operator/=(const double num) {
+	theta /= num;
+	phi /= num;
 
 	clamp();
 

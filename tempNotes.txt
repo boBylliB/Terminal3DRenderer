@@ -1,0 +1,19 @@
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/DefaultCube.obj
+
+Vector originVector(origin, tris[triIdx].verts[0]);
+            Vector normal = tris[triIdx].normal;
+            Vector ray = rays[rayIdx];
+            ray.normalize();
+            
+            double dist = (normal.dot(originVector)) / normal.dot(ray);
+
+double brightness = pixelBrightness[row + col];
+			std::string grayscale = GRAYSCALE;
+			if (brightness - intPart(brightness) >= 0.5)
+				brightness += 1;
+			int brightInt = brightness;
+			if (brightInt > grayscale.length() - 1)
+				brightInt = grayscale.length() - 1;
+			if (brightInt < 0)
+				brightInt = 0;
+			std::cout << grayscale[brightInt];

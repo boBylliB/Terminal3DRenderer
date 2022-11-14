@@ -3,30 +3,12 @@
 
 #include "Triangle.h"
 
-bool Triangle::checkWithin(const Point &pt) const {
-    Vector edgeA(verts[1].x - verts[0].x, verts[1].y - verts[0].y, verts[1].z - verts[0].z);
-    Vector edgeB(verts[2].x - verts[1].x, verts[2].y - verts[1].y, verts[2].z - verts[1].z);
-    Vector edgeC(verts[0].x - verts[2].x, verts[0].y - verts[2].y, verts[0].z - verts[2].z);
-    Vector cA(pt.x - verts[0].x, pt.y - verts[0].y, pt.z - verts[0].z);
-    Vector cB(pt.x - verts[1].x, pt.y - verts[1].y, pt.z - verts[1].z);
-    Vector cC(pt.x - verts[2].x, pt.y - verts[2].y, pt.z - verts[2].z);
+Triangle::Triangle(void) {
+    Point emptyPt = {};
 
-    bool check1 = normal.dot(edgeA.cross(cA)) > 0.0;
-    bool check2 = normal.dot(edgeB.cross(cB)) > 0.0;
-    bool check3 = normal.dot(edgeC.cross(cC)) > 0.0;
-
-    return (check1 && check2 && check3);
-}
-void Triangle::calculateNormal(void) {
-    Vector rAB(verts[1].x - verts[0].x, verts[1].y - verts[0].y, verts[1].z - verts[0].z);
-    Vector rBC(verts[2].x - verts[1].x, verts[2].y - verts[1].y, verts[2].z - verts[1].z);
-    Vector cross = rAB.cross(rBC);
-    cross.normalize();
-    normal = cross;
-}
-void Triangle::calculateD(void) {
-    Vector vertVec(verts[0].x, verts[0].y, verts[0].z);
-    D = normal.dot(vertVec);
+    verts[0] = emptyPt;
+    verts[1] = emptyPt;
+    verts[2] = emptyPt;
 }
 Triangle::Triangle(const Point pts[3]) {
     verts[0] = pts[0];
@@ -34,7 +16,34 @@ Triangle::Triangle(const Point pts[3]) {
     verts[2] = pts[2];
 
     calculateNormal();
-    calculateD();
+}
+
+bool Triangle::checkWithin(Vector dir, const Point &origin) const {
+    Vector limitA(origin, verts[0]);
+    Vector limitB(origin, verts[1]);
+    Vector limitC(origin, verts[2]);
+
+    limitA.normalize();
+    limitB.normalize();
+    limitC.normalize();
+    dir.normalize();
+
+    Vector planeA = limitB.cross(limitC);
+    Vector planeB = limitA.cross(limitC);
+    Vector planeC = limitA.cross(limitB);
+
+    bool testA = limitA.dot(planeA) * dir.dot(planeA) > 0;
+    bool testB = limitB.dot(planeB) * dir.dot(planeB) > 0;
+    bool testC = limitC.dot(planeC) * dir.dot(planeC) > 0;
+
+    return (testA && testB && testC);
+}
+void Triangle::calculateNormal(void) {
+    Vector rAB(verts[1].x - verts[0].x, verts[1].y - verts[0].y, verts[1].z - verts[0].z);
+    Vector rBC(verts[2].x - verts[1].x, verts[2].y - verts[1].y, verts[2].z - verts[1].z);
+    Vector cross = rAB.cross(rBC);
+    cross.normalize();
+    normal = cross;
 }
 
 #endif

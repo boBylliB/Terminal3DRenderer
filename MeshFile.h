@@ -16,9 +16,13 @@ public:
 	Filetype type;
 	std::ifstream fin;
 	
-	void open(void);
-	void close(void);
+	MeshFile(void);
+	MeshFile(const std::string&); 
 	~MeshFile(void);
+
+	void open(void);
+	void open(const std::string&);
+	void close(void);
 };
 
 #endif
