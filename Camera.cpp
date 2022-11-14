@@ -32,7 +32,8 @@ Camera::Camera(const Point& position, const Vector& direction, const double fiel
 	this->direction = direction;
 	this->direction.normalize();
 
-	this->fieldOfView.phi = fieldOfView;
+	// CHARRATIO attempts to even out the distortion from chars being taller than their width
+	this->fieldOfView.phi = fieldOfView * CHARRATIO;
 	this->fieldOfView.theta = fieldOfView;
 }
 void Camera::setPosition(const Point& pos) {
@@ -43,7 +44,7 @@ void Camera::setDirection(const Vector& dir) {
 	direction.normalize();
 }
 void Camera::setFOV(const double fieldOfView) {
-	this->fieldOfView.phi = fieldOfView;
+	this->fieldOfView.phi = fieldOfView * CHARRATIO;
 	this->fieldOfView.theta = fieldOfView;
 }
 void Camera::setRoll(const double r) {
@@ -114,33 +115,45 @@ void Camera::display(const Mesh& m) {
 
 	std::vector<Vector> rays;
 
-	for (int row = 0; row < outputHeight * 3; row++) {
-		for (int col = 0; col < outputWidth * 3; col++) {
-			Angle rayAngle = startingAngle;
-			rayAngle.theta += col * angleBetween.theta;
-			rayAngle.phi += row * angleBetween.phi;
+	for (int row = 0; row < outputHeight; row++) {
+		for (int col = 0; col < outputWidth; col++) {
+			for (int subrow = row*3; subrow < row*3 + 3; subrow++) {
+				for (int subcol = col * 3; subcol < col * 3 + 3; subcol++) {
+					Angle rayAngle = startingAngle;
+					rayAngle.theta += subcol * angleBetween.theta;
+					rayAngle.phi += subrow * angleBetween.phi;
 
-			Vector ray(rayAngle);
-			rays.push_back(ray);
+					Vector ray(rayAngle);
+					rays.push_back(ray);
+				}
+			}
 		}
 	}
+	std::cout << "Rays created, calculating intersects" << std::endl;
 	// Calculate the intersection distances for each ray
 	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays);
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
+	std::cout << "Calculating brightness values" << std::endl;
 	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
-	for (int row = 0; row < outputHeight * 3; row++) {
-		for (int col = 0; col < outputWidth * 3; col++) {
-			if (intersectDistances[row*outputWidth + col] > 0)
-				pixelBrightness[(row / 3)*outputWidth + (col / 3)] += 1.0;
-		}
+	for (int idx = 0; idx < outputHeight * outputWidth * 9; idx++) {
+		int interIdx = idx;
+		int pixIdx = idx / 9;
+		if (intersectDistances[interIdx] > 0)
+			pixelBrightness[pixIdx] += 1.0 / (intersectDistances[interIdx] * FALLOFF);
 	}
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
-			if (pixelBrightness[row * outputWidth + col] > 0)
-				std::cout << "@";
-			else
-				std::cout << " ";
+			double brightness = pixelBrightness[row*outputWidth + col];
+			std::string grayscale = GRAYSCALE;
+			if (brightness - intPart(brightness) >= 0.5)
+				brightness += 1;
+			int brightInt = brightness;
+			if (brightInt > grayscale.length() - 1)
+				brightInt = grayscale.length() - 1;
+			if (brightInt < 0)
+				brightInt = 0;
+			std::cout << grayscale[brightInt];
 		}
 		std::cout << std::endl;
 	}

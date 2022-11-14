@@ -1,10 +1,10 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define MAXTRIS 256
-#define HEIGHT 50
-#define WIDTH 50
-#define FOV 70
+#define HEIGHT 300
+#define WIDTH 300
+#define FOV 40
+#define CHARRATIO 2
 #define DELAY 10000000
 #define GRAYSCALE " .:-=+*#%@"
 #define MAXNAMELEN 64

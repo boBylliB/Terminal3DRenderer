@@ -26,7 +26,7 @@ void Mesh::buildMesh(MeshFile& mf) {
     
     switch (mf.type) {
     case Filetype::TXT:
-        while (mf.fin.good() && tri < MAXTRIS) {
+        while (mf.fin.good()) {
             if (i > 2) {
                 i = 0;
                 vert++;
@@ -43,15 +43,16 @@ void Mesh::buildMesh(MeshFile& mf) {
             Triangle currentTri;
             switch (i) {
             case 0:
-                tris[tri].verts[vert].x = input;
+                currentTri.verts[vert].x = input;
                 break;
             case 1:
-                tris[tri].verts[vert].y = input;
+                currentTri.verts[vert].y = input;
                 break;
             case 2:
-                tris[tri].verts[vert].z = input;
+                currentTri.verts[vert].z = input;
                 break;
             }
+            tris.push_back(currentTri);
             ++i;
         }
         numTris = tris.size();
@@ -189,12 +190,20 @@ std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const
     // If the distance is negative, it is behind the origin of the ray
     // Find the point of intersection by adding distance * normalized ray to the origin coordinates
     // Check for intersection within triangle
+    int progress = 0;
+    int progressTarget = 0;
     std::vector<double> distances;
     for (int rayIdx = 0; rayIdx < rays.size(); rayIdx++) {
         std::vector<double> rayDistances;
         for (int triIdx = 0; triIdx < tris.size(); triIdx++) {
             if (tris[triIdx].checkWithin(rays[rayIdx], origin)) {
-                rayDistances.push_back(1.0);
+                Vector originVector(origin, tris[triIdx].verts[0]);
+                Vector normal = tris[triIdx].normal;
+                Vector ray = rays[rayIdx];
+                ray.normalize();
+
+                double dist = (normal.dot(originVector)) / normal.dot(ray);
+                rayDistances.push_back(dist);
             }
         }
         
@@ -210,6 +219,13 @@ std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const
             distances.push_back(min);
         else
             distances.push_back(-1);
+
+        if (rayIdx > progressTarget) {
+            cout << "Intersect Distance Progress: " << progress << "%" << endl;
+            progress += 1;
+            double progressPct = progress / 100.0;
+            progressTarget = rays.size() * progressPct;
+        }
     }
     return distances;
 }

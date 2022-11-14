@@ -17,15 +17,16 @@
 #include "Vector.h"
 
 using namespace std;
-/*
+
 int main(void) {
 	Mesh m;
+	cout << "Triangle count: " << m.numTris << endl;
 
-	Point camPos(10, 10, 10);
+	Point camPos(100, 50, 100);
 	Vector camDir(camPos, m.center);
 
-	Camera cam(camPos, camDir, 40, 0, 100, 100);
+	Camera cam(camPos, camDir);
 	cam.display(m);
 
 	return 0;
-}*/
+}

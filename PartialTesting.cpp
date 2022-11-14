@@ -13,21 +13,24 @@
 #include "Vector.h"
 
 using namespace std;
-
+/*
 int main(void) {
 	int outputHeight = 10;
 	int outputWidth = 10;
 	vector<double> intersectDistances(outputHeight * outputWidth * 9, 0.0);
-	for (int i = 50; i < 100; i++) {
-		intersectDistances[i] = 1;
+	for (int i = 0; i < outputHeight * outputWidth * 9; i++) {
+		if ((i / (outputWidth*3)) % 2 == 0) {
+			intersectDistances[i] = 1;
+		}
 	}
 
 	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
-	for (int row = 0; row < outputHeight * 3; row++) {
-		for (int col = 0; col < outputWidth * 3; col++) {
-			if (intersectDistances[row*outputWidth + col] > 0)
-				pixelBrightness[(row / 3) * outputWidth + (col / 3)] += 1.0;
-		}
+	for (int idx = 0; idx < outputHeight * outputWidth * 3; idx++) {
+		int interIdx = idx;
+		int pixIdx = idx / 3;
+		cout << pixIdx << endl;
+		if (intersectDistances[interIdx] > 0)
+			pixelBrightness[pixIdx] += 1.0;
 	}
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {
@@ -41,4 +44,4 @@ int main(void) {
 	}
 
 	return 0;
-}
+}*/
