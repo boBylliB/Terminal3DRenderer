@@ -104,7 +104,7 @@ void Camera::orbitCurrent(const Angle& a, const double radius) {
 
 // Core functions (and any functions that are too complex to be considered "utility")
 // Calculates a snapshot of the mesh from this camera and displays it to the screen
-void Camera::display(const Mesh& m) {
+void Camera::display(const Mesh& m, const bool showProgress) {
 	// Calculate the angle between pixels
 	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
 	// Create 9 rays, evenly spaced, per on-screen "pixel"
@@ -131,7 +131,7 @@ void Camera::display(const Mesh& m) {
 	}
 	std::cout << "Rays created, calculating intersects" << std::endl;
 	// Calculate the intersection distances for each ray
-	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays);
+	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays, showProgress);
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
 	std::cout << "Calculating brightness values" << std::endl;
 	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);

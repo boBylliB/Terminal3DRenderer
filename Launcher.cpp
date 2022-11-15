@@ -22,11 +22,11 @@ int main(void) {
 	Mesh m;
 	cout << "Triangle count: " << m.numTris << endl;
 
-	Point camPos(100, 50, 100);
+	Point camPos(150, 30, 75);
 	Vector camDir(camPos, m.center);
 
-	Camera cam(camPos, camDir);
-	cam.display(m);
+	Camera cam(camPos, camDir, 35, 0, 300, 300);
+	cam.display(m, true);
 
 	return 0;
 }

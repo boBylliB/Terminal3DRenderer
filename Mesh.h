@@ -22,7 +22,7 @@ public:
 	// Calculates the intersect distances for each given ray when compared to this mesh
 	// The return value will be a vector of doubles that are either the distance to intersection or -1 for "do not display"
 	// The returned double will be -1 if it doesn't intersect any triangle
-	std::vector<double> calculateIntersectDistances(const Point&, const std::vector<Vector>) const;
+	std::vector<double> calculateIntersectDistances(const Point&, const std::vector<Vector>, const bool) const;
 };
 
 #endif

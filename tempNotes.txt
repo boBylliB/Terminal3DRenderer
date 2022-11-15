@@ -1,4 +1,6 @@
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/EiffelTower.obj
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/DefaultCube.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Doge.obj
 
 Vector originVector(origin, tris[triIdx].verts[0]);
             Vector normal = tris[triIdx].normal;

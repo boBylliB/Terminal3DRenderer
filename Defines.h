@@ -8,6 +8,6 @@
 #define DELAY 10000000
 #define GRAYSCALE " .:-=+*#%@"
 #define MAXNAMELEN 64
-#define FALLOFF 0.1
+#define FALLOFF 0.001
 
 #endif

@@ -43,7 +43,7 @@ public:
 	void orbitCurrent(const Angle&, const double); // Runs the orbit function with a point generated from the current view direction and the given radius
 
 	// Core functions (and any functions that are too complex to be considered "utility")
-	void display(const Mesh&); // Calculates a snapshot of the mesh from this camera and displays it to the screen
+	void display(const Mesh&, const bool); // Calculates a snapshot of the mesh from this camera and displays it to the screen
 };
 
 #endif

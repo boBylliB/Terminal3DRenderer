@@ -183,7 +183,7 @@ void Mesh::calcCenter(void) {
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
 }
-std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const std::vector<Vector> rays) const {
+std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const std::vector<Vector> rays, const bool showProgress) const {
     // Get the normal of the triangle
     // Get the vector from any point on the triangle to the origin
     // Distance = (normal dot (triangle to origin)) / (normal dot normalized ray)
@@ -220,7 +220,7 @@ std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const
         else
             distances.push_back(-1);
 
-        if (rayIdx > progressTarget) {
+        if (rayIdx > progressTarget && showProgress) {
             cout << "Intersect Distance Progress: " << progress << "%" << endl;
             progress += 1;
             double progressPct = progress / 100.0;
