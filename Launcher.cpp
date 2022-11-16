@@ -13,6 +13,7 @@
 #include "MeshFile.h"
 #include "Point.h"
 #include "RenderUtils.h"
+#include "ThreadedCamera.h"
 #include "Triangle.h"
 #include "Vector.h"
 
@@ -27,6 +28,9 @@ int main(void) {
 
 	Camera cam(camPos, camDir, 35, 0, 300, 300);
 	cam.display(m, true);
+
+	ThreadedCamera tcam(camPos, camDir, 35, 0, 300, 300);
+	tcam.threadedDisplay(m, true);
 
 	return 0;
 }

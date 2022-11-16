@@ -3,6 +3,20 @@
 
 #include "Camera.h"
 
+Camera::Camera(const Point& position, const Vector& direction, const double fieldOfView, const double roll, const int height, const int width) {
+	this->position = position;
+	this->roll = roll;
+	this->outputHeight = height;
+	this->outputWidth = width;
+
+	this->direction = direction;
+	this->direction.normalize();
+
+	// CHARRATIO attempts to even out the distortion from chars being taller than their width
+	this->fieldOfView.phi = fieldOfView * CHARRATIO;
+	this->fieldOfView.theta = fieldOfView;
+}
+
 // Getter Functions
 Point Camera::getPosition(void) {
 	return position;
@@ -23,19 +37,6 @@ int* Camera::getOutputSize(void) {
 }
 
 // Setter Functions
-Camera::Camera(const Point& position, const Vector& direction, const double fieldOfView, const double roll, const int height, const int width) {
-	this->position = position;
-	this->roll = roll;
-	this->outputHeight = height;
-	this->outputWidth = width;
-
-	this->direction = direction;
-	this->direction.normalize();
-
-	// CHARRATIO attempts to even out the distortion from chars being taller than their width
-	this->fieldOfView.phi = fieldOfView * CHARRATIO;
-	this->fieldOfView.theta = fieldOfView;
-}
 void Camera::setPosition(const Point& pos) {
 	position = pos;
 }

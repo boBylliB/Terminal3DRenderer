@@ -11,7 +11,7 @@
 #include "RenderUtils.h"
 
 class Camera {
-private:
+protected:
 	Point position;
 	Vector direction;
 	Angle fieldOfView;
@@ -19,6 +19,8 @@ private:
 	int outputHeight;
 	int outputWidth;
 public:
+	Camera(const Point&, const Vector&, const double = FOV, const double = 0, const int = HEIGHT, const int = WIDTH);
+	
 	// Getter functions
 	Point getPosition(void);
 	Vector getDirection(void);
@@ -27,7 +29,6 @@ public:
 	int* getOutputSize(void); // Returns a 2 element array, height in index 0 and width in index 1
 
 	// Setter functions
-	Camera(const Point&, const Vector&, const double = FOV, const double = 0, const int = HEIGHT, const int = WIDTH);
 	void setPosition(const Point&);
 	void setDirection(const Vector&);
 	void setFOV(const double);
@@ -43,7 +44,7 @@ public:
 	void orbitCurrent(const Angle&, const double); // Runs the orbit function with a point generated from the current view direction and the given radius
 
 	// Core functions (and any functions that are too complex to be considered "utility")
-	void display(const Mesh&, const bool); // Calculates a snapshot of the mesh from this camera and displays it to the screen
+	void display(const Mesh&, const bool = false); // Calculates a snapshot of the mesh from this camera and displays it to the screen
 };
 
 #endif
