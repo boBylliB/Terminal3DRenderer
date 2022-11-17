@@ -2,7 +2,7 @@
 #define THREADEDCAMERA_CPP
 
 #include <thread>
-#include <pthread.h>
+#include <atomic>
 
 #include "ThreadedCamera.h"
 
@@ -16,8 +16,10 @@ ThreadedCamera::ThreadedCamera(Camera& cam) : Camera(cam.getPosition(), cam.getD
 }
 
 // Utility Functions
-void ThreadedCamera::threadedCalculateIntersectDistances(struct threadedCalculationArgs* args) {
-	args->distances = args->m.calculateIntersectDistances(args->pos, args->rays, args->showProgress);
+void ThreadedCamera::threadedCalculateIntersectDistances(void* arguments) {
+	struct threadedCalculationArgs* args = (struct threadedCalculationArgs*)arguments;
+	*(args->distances) = args->m.calculateIntersectDistances(args->pos, *(args->rays), args->showProgress);
+	cout << "Calculated distances" << endl;
 }
 
 // Core Functions
@@ -51,32 +53,44 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 	// Split rays into chunks for threads
 	int raysPerThread = rays.size() / NUMTHREADS;
 
-	vector<Vector> partialRays[NUMTHREADS];
+	vector<Vector> *partialRays[NUMTHREADS];
 
 	for (int idx = 0; idx < NUMTHREADS - 1; idx++) {
+		partialRays[idx] = new vector<Vector>();
 		for (int rayIdx = 0; rayIdx < raysPerThread; rayIdx++) {
-			partialRays[idx].push_back(rays[rayIdx + idx * raysPerThread]);
+			partialRays[idx]->emplace_back(rays[rayIdx + idx * raysPerThread]);
 		}
 	}
+	partialRays[NUMTHREADS - 1] = new vector<Vector>();
 	for (int rayIdx = (NUMTHREADS - 1) * raysPerThread; rayIdx < rays.size(); rayIdx++) {
-		partialRays[NUMTHREADS - 1].push_back(rays[rayIdx]);
+		partialRays[NUMTHREADS - 1]->emplace_back(rays[rayIdx]);
 	}
 	// Calculate the intersection distances for each ray in parallel
-	vector<double> intersectDistanceSections[NUMTHREADS];
-	pthread_t threadpool[NUMTHREADS];
+	vector<double> *intersectDistanceSections[NUMTHREADS];
+	threadedCalculationArgs *args[NUMTHREADS];
+	thread threadpool[NUMTHREADS];
 	for (int idx = 0; idx < NUMTHREADS; idx++) {
-		threadpool.emplace_back(&ThreadedCamera::threadedCalculateIntersectDistances, ref(intersectDistanceSections[idx]), ref(position), ref(m), ref(partialRays[idx]), ref(showProgress));
+		intersectDistanceSections[idx] = new vector<double>();
+		args[idx] = new threadedCalculationArgs{ intersectDistanceSections[idx], position, m, partialRays[idx], showProgress };
+		threadpool[idx] = thread(&ThreadedCamera::threadedCalculateIntersectDistances, args[idx]);
 	}
 	// Now we wait for all threads to finish and merge each intersect distance section into a complete intersect distances array
 	vector<double> intersectDistances;
 	for (int idx = 0; idx < NUMTHREADS; idx++) {
 		threadpool[idx].join();
-		intersectDistances.insert(intersectDistances.end(), intersectDistanceSections[idx].begin(), intersectDistanceSections[idx].end());
+		for (int jdx = 0; jdx < intersectDistanceSections[idx]->size(); jdx++) {
+			intersectDistances.push_back(intersectDistanceSections[idx]->at(jdx));
+		}
+	}
+	// Free memory
+	for (int idx = 0; idx < NUMTHREADS; idx++) {
+		delete intersectDistanceSections[idx];
+		delete partialRays[idx];
 	}
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
 	cout << "Calculating brightness values" << std::endl;
 	vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
-	for (int idx = 0; idx < outputHeight * outputWidth * 9; idx++) {
+	for (int idx = 0; idx < intersectDistances.size(); idx++) {
 		int interIdx = idx;
 		int pixIdx = idx / 9;
 		if (intersectDistances[interIdx] > 0)

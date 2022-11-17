@@ -3,17 +3,18 @@
 #define THREADEDCAMERA_H
 
 #include <vector>
+#include <atomic>
 
 #include "Mesh.h"
 #include "Vector.h"
 #include "Camera.h"
 
 struct threadedCalculationArgs {
-	std::vector<double> distances;
-	Point& pos;
-	Mesh& m;
-	vector<Vector> rays;
-	bool showProgress;
+	std::vector<double> *distances;
+	const Point& pos;
+	const Mesh& m;
+	std::vector<Vector> *rays;
+	const bool showProgress;
 };
 
 class ThreadedCamera : public Camera {
@@ -22,7 +23,7 @@ public:
 	ThreadedCamera(Camera&);
 
 	// Utility Functions
-	void threadedCalculateIntersectDistances(struct threadedCalculationArgs*);
+	static void threadedCalculateIntersectDistances(void*);
 	// Core Functions
 	// Functions the same as the standard camera display, but does the math in parallel for speed
 	void threadedDisplay(const Mesh&, const bool = false);

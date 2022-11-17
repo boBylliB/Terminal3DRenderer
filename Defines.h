@@ -9,6 +9,6 @@
 #define GRAYSCALE " .:-=+*#%@"
 #define MAXNAMELEN 64
 #define FALLOFF 0.001
-#define NUMTHREADS 8
+#define NUMTHREADS 12
 
 #endif

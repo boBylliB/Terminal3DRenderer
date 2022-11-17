@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
-#include <pthread.h>
 
 #include "Angle.h"
 #include "Camera.h"
