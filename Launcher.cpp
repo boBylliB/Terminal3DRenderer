@@ -25,10 +25,10 @@ int main(void) {
 
 	Point camPos(150, 30, 75);
 	Vector camDir(camPos, m.center);
-
+	
 	Camera cam(camPos, camDir, 35, 0, 300, 300);
 	cam.display(m, true);
-
+	
 	ThreadedCamera tcam(camPos, camDir, 35, 0, 300, 300);
 	tcam.threadedDisplay(m, true);
 

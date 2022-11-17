@@ -2,6 +2,7 @@
 #define THREADEDCAMERA_CPP
 
 #include <thread>
+#include <pthread.h>
 
 #include "ThreadedCamera.h"
 
@@ -15,8 +16,8 @@ ThreadedCamera::ThreadedCamera(Camera& cam) : Camera(cam.getPosition(), cam.getD
 }
 
 // Utility Functions
-void ThreadedCamera::threadedCalculateIntersectDistances(vector<double> distances, const Point& pos, const Mesh& m, const vector<Vector> rays, const bool showProgress) {
-	distances = m.calculateIntersectDistances(pos, rays, showProgress);
+void ThreadedCamera::threadedCalculateIntersectDistances(struct threadedCalculationArgs* args) {
+	args->distances = args->m.calculateIntersectDistances(args->pos, args->rays, args->showProgress);
 }
 
 // Core Functions
@@ -62,9 +63,9 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 	}
 	// Calculate the intersection distances for each ray in parallel
 	vector<double> intersectDistanceSections[NUMTHREADS];
-	vector<thread> threadpool;
+	pthread_t threadpool[NUMTHREADS];
 	for (int idx = 0; idx < NUMTHREADS; idx++) {
-		threadpool.emplace_back(&ThreadedCamera::threadedCalculateIntersectDistances, intersectDistanceSections[idx], position, m, partialRays[idx], showProgress);
+		threadpool.emplace_back(&ThreadedCamera::threadedCalculateIntersectDistances, ref(intersectDistanceSections[idx]), ref(position), ref(m), ref(partialRays[idx]), ref(showProgress));
 	}
 	// Now we wait for all threads to finish and merge each intersect distance section into a complete intersect distances array
 	vector<double> intersectDistances;
