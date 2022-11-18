@@ -36,15 +36,22 @@ public:
 	void setOutput(const int, const int=-1);
 
 	// Basic utility functions
-	void move(const Vector&); // Adjusts the position by the given vector
-	void rotate(const Angle&); // Adjusts the direction by rotating the current view vector by the given angle
-	void zoom(const double); // Adjusts the FOV by the direct inverse of the given double (so that positive zoom is "zoom in")
-	void rollAdjust(const double); // Adjusts the roll by the given double
-	void orbit(const Angle&, const Point&); // Rotates the camera around the given point while keeping the radius the same, sets the view to point at the orbit center
-	void orbitCurrent(const Angle&, const double); // Runs the orbit function with a point generated from the current view direction and the given radius
+	// Adjusts the position by the given vector
+	void move(const Vector&);
+	// Adjusts the direction by rotating the current view vector by the given angle
+	void rotate(const Angle&); 
+	// Adjusts the FOV by the direct inverse of the given double (so that positive zoom is "zoom in")
+	void zoom(const double); 
+	// Adjusts the roll by the given double
+	void rollAdjust(const double); 
+	// Rotates the camera around the given point while keeping the radius the same, sets the view to point at the orbit center
+	void orbit(const Angle&, const Point&); 
+	// Runs the orbit function with a point generated from the current view direction and the given radius
+	void orbitCurrent(const Angle&, const double); 
 
 	// Core functions (and any functions that are too complex to be considered "utility")
-	void display(const Mesh&, const bool = false); // Calculates a snapshot of the mesh from this camera and displays it to the screen
+	// Calculates a snapshot of the mesh from this camera and displays it to the screen
+	void display(const Mesh&, const bool = false); 
 };
 
 #endif

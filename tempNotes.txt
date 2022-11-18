@@ -1,21 +1,15 @@
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/EiffelTower.obj
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/DefaultCube.obj
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Doge.obj
-
-Vector originVector(origin, tris[triIdx].verts[0]);
-            Vector normal = tris[triIdx].normal;
-            Vector ray = rays[rayIdx];
-            ray.normalize();
-            
-            double dist = (normal.dot(originVector)) / normal.dot(ray);
-
-double brightness = pixelBrightness[row + col];
-			std::string grayscale = GRAYSCALE;
-			if (brightness - intPart(brightness) >= 0.5)
-				brightness += 1;
-			int brightInt = brightness;
-			if (brightInt > grayscale.length() - 1)
-				brightInt = grayscale.length() - 1;
-			if (brightInt < 0)
-				brightInt = 0;
-			std::cout << grayscale[brightInt];
+150 50 75
+30 0 500 500
+takes about 2 minutes
+30 0 1000 1000
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Benchy.obj
+7 13 -125
+32 0 100 100
+Takes a little over 20 minutes
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/LowPolyBenchy.obj
+150 50 75
+30 0 500 500
+takes a little over 10 minutes

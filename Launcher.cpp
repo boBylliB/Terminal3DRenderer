@@ -23,13 +23,13 @@ int main(void) {
 	Mesh m;
 	cout << "Triangle count: " << m.numTris << endl;
 
-	Point camPos(150, 30, 75);
+	Point camPos(150, 50, 75);
 	Vector camDir(camPos, m.center);
 	/*
 	Camera cam(camPos, camDir, 35, 0, 5, 5);
 	cam.display(m, true);*/
 	
-	ThreadedCamera tcam(camPos, camDir, 30, 0, 100, 100);
+	ThreadedCamera tcam(camPos, camDir, 30, 0, 500, 500);
 	tcam.threadedDisplay(m, true);
 
 	return 0;
