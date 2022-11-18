@@ -26,6 +26,16 @@ void Mesh::buildMesh(MeshFile& mf) {
     
     switch (mf.type) {
     case Filetype::TXT:
+        /* TXT FILE FORMAT (custom):
+        *  1 triangle {
+        *  x, y, z
+        *  x, y, z
+        *  x, y, z
+        *
+        *  }
+        *   triangles are separated by a blank line, doesn't matter to the program but makes it easier to read
+        *   points should be listed counterclockwise in order to calculate normals correctly (right hand rule)
+        */
         while (mf.fin.good()) {
             if (i > 2) {
                 i = 0;
@@ -136,10 +146,10 @@ void Mesh::buildMesh(MeshFile& mf) {
         numTris = tris.size();
         break;
     case Filetype::PLY:
-
+        // Space for future implementation (MeshFile.cpp should block code execution from reaching here until this is implemented)
         break;
     case Filetype::STL:
-
+        // Space for future implementation
         break;
     }
 
@@ -153,6 +163,7 @@ void Mesh::calcCenter(void) {
     double zMin = 0;
     double zMax = 0;
 
+    // Find the maximum and minimum displacements from origin for each coordinate axis
     for (int i = 0; i < numTris; ++i) {
         for (int j = 0; j < 3; ++j) {
             Point pt = tris[i].verts[j];
@@ -178,7 +189,7 @@ void Mesh::calcCenter(void) {
                 zMax = pt.z;
         }
     }
-
+    // Center is exactly between each extreme
     center.x = (xMin + xMax) / 2;
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
@@ -220,6 +231,7 @@ std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const
         else
             distances.push_back(-1);
 
+        // Displays progress in percentage to the screen
         if (rayIdx > progressTarget && showProgress) {
             cout << "Intersect Distance Progress: " << progress << "%" << endl;
             progress += 1;

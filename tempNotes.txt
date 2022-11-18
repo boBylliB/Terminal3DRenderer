@@ -5,6 +5,7 @@ C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Doge.obj
 30 0 500 500
 takes about 2 minutes
 30 0 1000 1000
+takes about 10 minutes, cant display properly on a single window
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Benchy.obj
 7 13 -125
 32 0 100 100

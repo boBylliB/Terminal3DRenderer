@@ -25,6 +25,11 @@ void ThreadedCamera::threadedCalculateIntersectDistances(void* arguments) {
 // Core Functions
 // Functions the same as the standard camera display, but does the math in parallel for speed
 void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
+	// Display a line for the output width for verification that the whole display fits on screen
+	for (int idx = 0; idx < outputWidth; idx++) {
+		cout << "@";
+	}
+	cout << endl << endl;
 	// Calculate the angle between pixels
 	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
 	// Create 9 rays, evenly spaced, per on-screen "pixel"
@@ -87,14 +92,31 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 		delete intersectDistanceSections[idx];
 		delete partialRays[idx];
 	}
+	// Calculate the minimum distance for brightness falloff
+	double minDist = DBL_MAX;
+	double maxDist = 0;
+	for (int idx = 0; idx < intersectDistances.size(); idx++) {
+		if (intersectDistances[idx] < minDist && intersectDistances[idx] > 0)
+			minDist = intersectDistances[idx];
+		if (intersectDistances[idx] > maxDist)
+			maxDist = intersectDistances[idx];
+	}
+	if (maxDist <= minDist)
+		maxDist = DBL_MAX;
+	double falloff = maxDist - minDist;
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
 	cout << "Calculating brightness values" << std::endl;
 	vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
 	for (int idx = 0; idx < intersectDistances.size(); idx++) {
 		int interIdx = idx;
 		int pixIdx = idx / 9;
-		if (intersectDistances[interIdx] > 0)
-			pixelBrightness[pixIdx] += 1.0 / (intersectDistances[interIdx] * FALLOFF);
+		if (intersectDistances[interIdx] > 0) {
+			double brightnessScale = 1.0 - (intersectDistances[interIdx] - minDist) / falloff;
+			// Make sure value is between FALLOFFMIN and 1
+			brightnessScale = (brightnessScale >= 1) ? 1 : brightnessScale;
+			brightnessScale = (brightnessScale <= FALLOFFMIN) ? FALLOFFMIN : brightnessScale;
+			pixelBrightness[pixIdx] += brightnessScale;
+		}
 	}
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {

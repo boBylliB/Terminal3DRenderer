@@ -32,7 +32,7 @@ void MeshFile::open(void) {
 		}
 		catch (string err) {
 			cout << "Error reading file: " << err << endl;
-			cout << "Please try again. The file should be of type obj, stl, ply, or txt (custom filetype)" << endl;
+			cout << "Please try again. The file should be of type obj or txt (custom filetype)" << endl;
 			valid = false;
 		}
 	} while (!valid);
@@ -51,7 +51,7 @@ void MeshFile::open(const string& givenFilename) {
 			filename = givenFilename;
 			type = Filetype::OBJ;
 			cout << "Detected file extension: " << extension << " as obj" << endl;
-		}
+		} /* PLY and STL will be implemented in the future
 		else if (extension == "ply") {
 			filename = givenFilename;
 			type = Filetype::PLY;
@@ -61,7 +61,7 @@ void MeshFile::open(const string& givenFilename) {
 			filename = givenFilename;
 			type = Filetype::STL;
 			cout << "Detected file extension: " << extension << " as stl" << endl;
-		}
+		} */
 		else if (extension == "txt") {
 			filename = givenFilename;
 			type = Filetype::TXT;

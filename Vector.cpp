@@ -100,6 +100,10 @@ Vector& Vector::operator/=(const Point& pt) {
 Angle Vector::toAngle(void) const {
     Angle a;
 
+    // The reason why I do this instead of testing directly for zero is because of floating point math (in this case, with doubles)
+    // After doing floating point math on a value, there is a chance that it isn't perfectly precise
+    // Therefore, I test within reasonable doubt that the value SHOULD be zero in this case
+    // Issues this close to zero could lead to undefined behaviour with my math, hence the concern
     if (K < 0.0000000001 && K > -0.0000000001) {
         /* printf("K was zero\n"); */
         if (I > 0.0)
@@ -137,6 +141,7 @@ void Vector::fromAngle(const Angle &a) {
     J = cos(degToRad(a.phi));
     K = sin(degToRad(a.theta)) * sin(degToRad(a.phi));
 
+    // If there's no way to tell how large a vector should be, I just normalize it so that it's easier to scale later
 	normalize();
 }
 void Vector::rotate(const Angle &a) {

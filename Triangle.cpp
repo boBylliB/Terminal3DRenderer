@@ -19,19 +19,24 @@ Triangle::Triangle(const Point pts[3]) {
 }
 
 bool Triangle::checkWithin(Vector dir, const Point &origin) const {
+    // Vectors from ray origin to each vertex as the bounds
     Vector limitA(origin, verts[0]);
     Vector limitB(origin, verts[1]);
     Vector limitC(origin, verts[2]);
 
+    // Normalize everything for ease of calculation
     limitA.normalize();
     limitB.normalize();
     limitC.normalize();
     dir.normalize();
 
+    // Create limiting planes using the bounding vectors
     Vector planeA = limitB.cross(limitC);
     Vector planeB = limitA.cross(limitC);
     Vector planeC = limitA.cross(limitB);
 
+    // If the tested vector is on the same side of each plane as the one bounding vector not within the test plane
+    // Therefore, the only way that it could be on the "inside" of each plane is if the tested vector is between the bounding vectors
     bool testA = limitA.dot(planeA) * dir.dot(planeA) > 0;
     bool testB = limitB.dot(planeB) * dir.dot(planeB) > 0;
     bool testC = limitC.dot(planeC) * dir.dot(planeC) > 0;

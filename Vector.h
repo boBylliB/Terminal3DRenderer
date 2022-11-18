@@ -33,13 +33,13 @@ public:
 	void fromAngle(const Angle&);
 	void rotate(const Angle&);
 	void normalize(void);
-	void scale(const double);
+	void scale(const double); // multiplies each direction by the given double
 	double magnitude(void) const;
-	double dot(const Vector&) const;
-	Vector cross(const Vector&) const;
-	void fromPoint(const Point&);
-	void difference(const Point&, const Point&);
-	Point toPoint(void) const;
+	double dot(const Vector&) const; // dot product of the current vector (dot) the given vector
+	Vector cross(const Vector&) const; // cross product of the current vector (cross) the given vector
+	void fromPoint(const Point&); // vector from 0,0,0 to the given point
+	void difference(const Point&, const Point&); // vector from point 1 to point 2
+	Point toPoint(void) const; // Point defined as where this vector is pointing if the origin was 0,0,0
 };
 
 #endif

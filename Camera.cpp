@@ -133,14 +133,31 @@ void Camera::display(const Mesh& m, const bool showProgress) {
 	std::cout << "Rays created, calculating intersects" << std::endl;
 	// Calculate the intersection distances for each ray
 	std::vector<double> intersectDistances = m.calculateIntersectDistances(position, rays, showProgress);
+	// Calculate the minimum distance for brightness falloff
+	double minDist = DBL_MAX;
+	double maxDist = 0;
+	for (int idx = 0; idx < intersectDistances.size(); idx++) {
+		if (intersectDistances[idx] < minDist && intersectDistances[idx] > 0)
+			minDist = intersectDistances[idx];
+		if (intersectDistances[idx] > maxDist)
+			maxDist = intersectDistances[idx];
+	}
+	if (maxDist <= minDist)
+		maxDist = DBL_MAX;
+	double falloff = maxDist - minDist;
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
 	std::cout << "Calculating brightness values" << std::endl;
 	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
 	for (int idx = 0; idx < outputHeight * outputWidth * 9; idx++) {
 		int interIdx = idx;
 		int pixIdx = idx / 9;
-		if (intersectDistances[interIdx] > 0)
-			pixelBrightness[pixIdx] += 1.0 / (intersectDistances[interIdx] * FALLOFF);
+		if (intersectDistances[interIdx] > 0) {
+			double brightnessScale = 1.0 - (intersectDistances[interIdx] - minDist) / falloff;
+			// Make sure value is between FALLOFFMIN and 1
+			brightnessScale = (brightnessScale >= 1) ? 1 : brightnessScale;
+			brightnessScale = (brightnessScale <= FALLOFFMIN) ? FALLOFFMIN : brightnessScale;
+			pixelBrightness[pixIdx] += brightnessScale;
+		}
 	}
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {

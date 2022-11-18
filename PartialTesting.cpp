@@ -1,3 +1,6 @@
+// This file is used for testing during development
+// Simply acts to keep messy test code out of the main launcher file
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
