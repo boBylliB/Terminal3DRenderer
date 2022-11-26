@@ -147,10 +147,7 @@ void Vector::fromAngle(const Angle &a) {
 void Vector::rotate(const Angle &a) {
     Angle vecAngle = toAngle();
     double mag = magnitude();
-    vecAngle.phi += a.phi;
-    vecAngle.theta += a.theta;
-
-    vecAngle.clamp();
+    vecAngle += a;
 
     fromAngle(vecAngle);
     scale(mag);

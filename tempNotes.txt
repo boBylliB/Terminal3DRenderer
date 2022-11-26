@@ -1,5 +1,10 @@
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/EiffelTower.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/EiffelTower4.obj
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/DefaultCube.obj
+7 4 7
+30 0 500 500
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Donut.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Donut2.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/amogus.obj
 C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Doge.obj
 150 50 75
 30 0 500 500

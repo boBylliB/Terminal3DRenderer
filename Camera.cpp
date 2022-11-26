@@ -90,11 +90,10 @@ void Camera::rollAdjust(const double r) {
 }
 // Rotates the camera around the given point while keeping the radius the same, sets the view to point at the orbit center
 void Camera::orbit(const Angle& ang, const Point& origin) {
+	Vector diff(origin, position);
+	diff.rotate(ang);
+	position = diff.toPoint();
 	direction.difference(position, origin);
-	rotate(ang);
-
-	Vector diff(direction.toPoint(), origin);
-	move(diff);
 }
 // Runs the orbit function with a point generated from the current view direction and the given radius
 void Camera::orbitCurrent(const Angle& ang, const double radius) {
