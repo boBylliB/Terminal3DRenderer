@@ -19,6 +19,6 @@
 // The number of threads to open in multithreaded rendering
 // More threads usually means faster rendering at the cost of higher load on the computer
 // However keep in mind once you hit 100% CPU usage it VERY RAPIDLY becomes diminishing returns
-#define NUMTHREADS 12
+#define NUMTHREADS 24
 
 #endif

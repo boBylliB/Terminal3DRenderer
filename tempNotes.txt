@@ -1,21 +1,19 @@
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/EiffelTower4.obj
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/DefaultCube.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/EiffelTower4.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/DefaultCube.obj
 7 4 7
 30 0 500 500
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Donut.obj
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Donut2.obj
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/amogus.obj
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Doge.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Donut.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Donut2.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/amogus.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Doge.obj
 150 50 75
 30 0 500 500
 takes about 2 minutes
-30 0 1000 1000
-takes about 10 minutes, cant display properly on a single window
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/Benchy.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Benchy.obj
 7 13 -125
 32 0 100 100
 Takes a little over 20 minutes
-C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/LowPolyBenchy.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/LowPolyBenchy.obj
 150 50 75
 30 0 500 500
 takes a little over 10 minutes
