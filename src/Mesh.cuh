@@ -22,7 +22,6 @@ public:
 
 	// Calculates the intersect distance for a given ray when compared to this mesh
 	// The returned double will be -1 if it doesn't intersect any triangle
-	__host__ __device__
 	double calculateIntersectDistance(const Point&, const Vector&) const;
 	// Calculates the intersect distances for each given ray when compared to this mesh
 	// The return value will be a vector of doubles that are either the distance to intersection or -1 for "do not display"
