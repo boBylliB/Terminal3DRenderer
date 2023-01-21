@@ -3,7 +3,7 @@
 #define MESHFILE_H
 
 #include "Defines.h"
-#include "Triangle.h"
+#include "Triangle.cuh"
 #include <cstdlib>
 #include <iostream>
 #include <string>

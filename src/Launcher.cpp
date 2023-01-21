@@ -8,6 +8,7 @@
 
 #include "Angle.h"
 #include "Camera.h"
+#include "CUDACamera.cuh"
 #include "Defines.h"
 #include "Mesh.h"
 #include "MeshFile.h"
@@ -29,8 +30,8 @@ int main(void) {
 	Camera cam(camPos, camDir, 35, 0, 5, 5);
 	cam.display(m, true);*/
 	
-	ThreadedCamera tcam(camPos, camDir, 30, 0, 500, 500);
-	tcam.threadedDisplay(m, true);
+	CUDACamera tcam(camPos, camDir, 30, 0, 500, 500);
+	tcam.CUDADisplay(m);
 
 	return 0;
 }

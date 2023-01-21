@@ -3,7 +3,7 @@
 #define TRIANGLE_H
 
 #include "Point.h"
-#include "Vector.h"
+#include "Vector.cuh"
 
 class Triangle {
 public:
@@ -13,7 +13,7 @@ public:
 	Triangle(void);
 	Triangle(const Point[3]);
 
-	bool checkWithin(Vector, const Point&) const;
+	__host__ __device__ bool checkWithin(Vector, const Point&) const;
 	void calculateNormal(void);
 };
 
