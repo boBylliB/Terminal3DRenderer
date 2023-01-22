@@ -12,7 +12,15 @@
 #include "Camera.h"
 
 // CUDA kernel function to run in parallel on the GPU (cannot be a member function)
-__global__ void CUDACalculateIntersectDistances(int, double*, const Point&, const Mesh&, Vector*);
+__global__ void CUDACalculateIntersectDistances(int, double*, const Point&, const Mesh&, Vector*, bool*);
+
+// CUDA device functions
+__device__ double CUDACalculateIntersectDistance(Triangle*, int, Point, Vector, bool*);
+__device__ bool CUDACheckWithin(bool*, Triangle, Vector, Point);
+__device__ Vector CUDADifferenceVector(Vector, Point, Point);
+__device__ Vector CUDANormalize(Vector);
+__device__ double CUDADot(Vector, Vector);
+__device__ Vector CUDACross(Vector, Vector);
 
 class CUDACamera : public Camera {
 public:

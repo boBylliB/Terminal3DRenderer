@@ -135,8 +135,6 @@ Angle Vector::toAngle(void) const {
     return a;
 }
 void Vector::fromAngle(const Angle &a) {
-    double magnitude = 0;
-
     I = cos(degToRad(a.theta)) * sin(degToRad(a.phi));
     J = cos(degToRad(a.phi));
     K = sin(degToRad(a.theta)) * sin(degToRad(a.phi));

@@ -3,8 +3,7 @@
 
 #include <fstream>
 #include <vector>
-#include "cuda.h"
-#include "Mesh.cuh"
+#include "Mesh.h"
 #include "RenderUtils.h"
 
 using namespace std;
@@ -194,7 +193,7 @@ void Mesh::calcCenter(void) {
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
 }
-__host__ __device__ double Mesh::calculateIntersectDistance(const Point& origin, const Vector& ray) const {
+double Mesh::calculateIntersectDistance(const Point& origin, const Vector& ray) const {
     // Get the normal of the triangle
     // Get the vector from any point on the triangle to the origin
     // Distance = (normal dot (triangle to origin)) / (normal dot normalized ray)

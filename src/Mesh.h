@@ -4,8 +4,8 @@
 
 #include <vector>
 #include "Defines.h"
-#include "Triangle.cuh"
-#include "Vector.cuh"
+#include "Triangle.h"
+#include "Vector.h"
 #include "MeshFile.h"
 
 class Mesh {
