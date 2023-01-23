@@ -8,28 +8,28 @@
 using namespace std;
 
 // CUDA kernel function to run in parallel on the GPU (cannot be a member function)
-__global__ void CUDACalculateIntersectDistances(int* numRays, double* distances, Point* pos, Triangle* tris, int* numTris, Vector* rays, bool* distChangeFlag) {
+__global__ void CUDACalculateIntersectDistances(int* numRays, double* distances, Point* pos, Triangle* tris, int* numTris, Vector* rays) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int stride = blockDim.x * gridDim.x;
 	for (int idx = index; idx < *numRays; idx += stride) {
-		distances[idx] = CUDACalculateIntersectDistance(tris, *numTris, *pos, rays[idx], distChangeFlag);
+		distances[idx] = CUDACalculateIntersectDistance(tris, *numTris, *pos, rays[idx]);
 	}
 }
 
 // CUDA device functions
-__device__ double CUDACalculateIntersectDistance(Triangle* tris, int numTris, Point origin, Vector ray, bool* distChangeFlag) {
+__device__ double CUDACalculateIntersectDistance(Triangle* tris, int numTris, Point origin, Vector ray) {
 	// Get the normal of the triangle
 	// Get the vector from any point on the triangle to the origin
 	// Distance = (normal dot (triangle to origin)) / (normal dot normalized ray)
 	// If the distance is negative, it is behind the origin of the ray
 	// Find the point of intersection by adding distance * normalized ray to the origin coordinates
 	// Check for intersection within triangle
-	double rayDistance = DBL_MAX;
+	double rayDistance = NPP_MAXABS_64F;
 	bool set = false;
 
 	for (int triIdx = 0; triIdx < numTris; triIdx++) {
-		if (CUDACheckWithin(distChangeFlag, tris[triIdx], ray, origin)) {
-			Vector originVector = CUDADifferenceVector(ray, tris[triIdx].verts[0], origin);
+		if (CUDACheckWithin(tris[triIdx], ray, origin)) {
+			Vector originVector = CUDADifferenceVector(ray, origin, tris[triIdx].verts[0]);
 			Vector normal = tris[triIdx].normal;
 			Vector normRay = CUDANormalize(ray);
 
@@ -41,13 +41,15 @@ __device__ double CUDACalculateIntersectDistance(Triangle* tris, int numTris, Po
 		}
 	}
 	if (set) {
-		*distChangeFlag = true;
 		return rayDistance;
 	}
-	else
+	else {
 		return -1;
+	}
 }
-__device__ bool CUDACheckWithin(bool* distChangeFlag, Triangle tri, Vector dir, Point origin) {
+__device__ bool CUDACheckWithin(Triangle tri, Vector dir, Point origin) {
+	// printf("%d: I=%lf, J=%lf, K=%lf, I=%lf, J=%lf, K=%lf\n", triIdx, dir.I, dir.J, dir.K, tri.normal.I, tri.normal.J, tri.normal.K);
+
 	// Vectors from ray origin to each vertex as the bounds
 	Vector limitA = CUDADifferenceVector(dir, origin, tri.verts[0]);
 	Vector limitB = CUDADifferenceVector(dir, origin, tri.verts[1]);
@@ -82,8 +84,8 @@ __device__ Vector CUDADifferenceVector(Vector vec, Point a, Point b) {
 __device__ Vector CUDANormalize(Vector vec) {
 	double mag = sqrt(vec.I * vec.I + vec.J * vec.J + vec.K * vec.K);
 	vec.I = vec.I / mag;
-	vec.J = vec.I / mag;
-	vec.K = vec.I / mag;
+	vec.J = vec.J / mag;
+	vec.K = vec.K / mag;
 	return vec;
 }
 __device__ double CUDADot(Vector a, Vector b) {
@@ -131,9 +133,6 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 	int* numTris;
 	cudaMallocManaged(&numTris, sizeof(int));
 	*numTris = m.tris.size();
-	bool* distChangeFlag;
-	cudaMallocManaged(&distChangeFlag, sizeof(bool));
-	*distChangeFlag = false;
 	double* intersectDistances;
 	cudaMallocManaged(&intersectDistances, *numRays * sizeof(double));
 	Triangle* triArr;
@@ -142,6 +141,7 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 		triArr[idx] = m.tris[idx];
 	}
 	// Create rays array on shared CPU & GPU memory
+	vector<Vector> rayVector;
 	Vector* rays;
 	cudaMallocManaged(&rays, *numRays * sizeof(Vector));
 
@@ -154,19 +154,32 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 					rayAngle.phi += subrow * angleBetween.phi;
 
 					Vector ray(rayAngle);
-					rays[subrow + subcol] = ray;
+					rayVector.push_back(ray);
 				}
 			}
 		}
 	}
+	for (int idx = 0; idx < *numRays; idx++) {
+		rays[idx] = rayVector[idx];
+	}
 	cout << "Rays created, calculating intersects" << std::endl;
 	// Calculates the number of thread blocks needed, making sure to round up if needed
 	int numBlocks = (*numRays + NUMTHREADSPERBLOCK - 1) / NUMTHREADSPERBLOCK;
+	// Prefetch the data from the CPU onto the GPU, since we're about to run the GPU code
+	int device = -1;
+	cudaGetDevice(&device);
+	cudaMemPrefetchAsync(numRays, sizeof(int), device, NULL);
+	cudaMemPrefetchAsync(intersectDistances, *numRays * sizeof(double), device, NULL);
+	cudaMemPrefetchAsync(pos, sizeof(Point), device, NULL);
+	cudaMemPrefetchAsync(triArr, *numTris * sizeof(Triangle), device, NULL);
+	cudaMemPrefetchAsync(numTris, sizeof(int), device, NULL);
+	cudaMemPrefetchAsync(rays, *numRays * sizeof(Vector), device, NULL);
 	// Calculate the intersection distances for each ray in parallel
 	cout << "Beginning GPU Distance Calculations" << endl;
-	CUDACalculateIntersectDistances<<<numBlocks, NUMTHREADSPERBLOCK>>>(numRays, intersectDistances, pos, triArr, numTris, rays, distChangeFlag);
+	CUDACalculateIntersectDistances<<<numBlocks, NUMTHREADSPERBLOCK>>>(numRays, intersectDistances, pos, triArr, numTris, rays);
 	// Now we wait for all threads to finish and collect the results
 	cudaDeviceSynchronize();
+	//cout << "I=" << rays[0].I << ", J=" << rays[0].J << ", K=" << rays[0].K << ", I=" << triArr[0].normal.I << ", J=" << triArr[0].normal.J << ", K=" << triArr[0].normal.K << endl;
 	cout << "Calculated Distances" << endl;
 	vector<double> distances;
 	for (int idx = 0; idx < *numRays; idx++) {
@@ -222,7 +235,6 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 		cudaFree(triArr);
 		cudaFree(numTris);
 		cudaFree(rays);
-		cudaFree(distChangeFlag);
 	}
 }
 

@@ -6,17 +6,18 @@
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include "nppdefs.h"
 
 #include "Mesh.h"
 #include "Vector.h"
 #include "Camera.h"
 
 // CUDA kernel function to run in parallel on the GPU (cannot be a member function)
-__global__ void CUDACalculateIntersectDistances(int, double*, const Point&, const Mesh&, Vector*, bool*);
+__global__ void CUDACalculateIntersectDistances(int*, double*, Point*, Triangle*, int*, Vector*);
 
 // CUDA device functions
-__device__ double CUDACalculateIntersectDistance(Triangle*, int, Point, Vector, bool*);
-__device__ bool CUDACheckWithin(bool*, Triangle, Vector, Point);
+__device__ double CUDACalculateIntersectDistance(Triangle*, int, Point, Vector);
+__device__ bool CUDACheckWithin(Triangle, Vector, Point);
 __device__ Vector CUDADifferenceVector(Vector, Point, Point);
 __device__ Vector CUDANormalize(Vector);
 __device__ double CUDADot(Vector, Vector);

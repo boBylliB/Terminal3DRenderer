@@ -23,6 +23,6 @@
 // The number of GPU threads to use within each block
 // The number of threads per block should ALWAYS be a multiple of 32, with a maximum of 1024 (by standard, check your GPU specs to see if it can take more)
 // Be careful when increasing the number of threads per block as it can cause major issues
-#define NUMTHREADSPERBLOCK 256
+#define NUMTHREADSPERBLOCK 640
 
 #endif
