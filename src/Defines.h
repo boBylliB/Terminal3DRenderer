@@ -13,9 +13,9 @@
 // Used to adjust the raycast angles to try and counteract distortion, so it might not match the actual ratio exactly
 #define CHARRATIO 2
 // The character scale from "black" to "white"
-#define GRAYSCALE " .:-=+*#%@"
+#define GRAYSCALE " .:-=+*&#%@"
 // The value to minimize falloff to, to make pixels at the back more visible
-#define FALLOFFMIN 0.2
+#define FALLOFFMIN 0.1
 // The number of threads to open in multithreaded rendering
 // More threads usually means faster rendering at the cost of higher load on the computer
 // However keep in mind once you hit 100% CPU usage it VERY RAPIDLY becomes diminishing returns

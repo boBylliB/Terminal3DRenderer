@@ -117,16 +117,14 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 	cout << endl << endl;
 	// Calculate the angle between pixels
 	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
-	// Create 9 rays, evenly spaced, per on-screen "pixel"
-	angleBetween /= 3;
 
-	Angle startingAngle((angleBetween.theta * (3.0 * outputWidth / 2.0) * -1.0), (angleBetween.phi * (3.0 * outputHeight / 2.0) * -1.0));
+	Angle startingAngle((angleBetween.theta * (outputWidth / 2.0) * -1.0), (angleBetween.phi * (outputHeight / 2.0) * -1.0));
 	startingAngle += direction.toAngle();
 
 	// Create required arrays & data on shared GPU & CPU memory
 	int* numRays;
 	cudaMallocManaged(&numRays, sizeof(int));
-	*numRays = outputHeight * outputWidth * 9;
+	*numRays = outputHeight * outputWidth;
 	Point* pos;
 	cudaMallocManaged(&pos, sizeof(Point));
 	*pos = position;
@@ -147,16 +145,12 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
-			for (int subrow = row * 3; subrow < row * 3 + 3; subrow++) {
-				for (int subcol = col * 3; subcol < col * 3 + 3; subcol++) {
-					Angle rayAngle = startingAngle;
-					rayAngle.theta += subcol * angleBetween.theta;
-					rayAngle.phi += subrow * angleBetween.phi;
+			Angle rayAngle = startingAngle;
+			rayAngle.theta += col * angleBetween.theta;
+			rayAngle.phi += row * angleBetween.phi;
 
-					Vector ray(rayAngle);
-					rayVector.push_back(ray);
-				}
-			}
+			Vector ray(rayAngle);
+			rayVector.push_back(ray);
 		}
 	}
 	for (int idx = 0; idx < *numRays; idx++) {
@@ -201,20 +195,18 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 	cout << "Calculating brightness values" << std::endl;
 	vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
 	for (int idx = 0; idx < *numRays; idx++) {
-		int interIdx = idx;
-		int pixIdx = idx / 9;
-		if (distances[interIdx] > 0) {
-			double brightnessScale = 1.0 - (distances[interIdx] - minDist) / falloff;
+		if (distances[idx] > 0) {
+			double brightnessScale = 1.0 - (distances[idx] - minDist) / falloff;
 			// Make sure value is between FALLOFFMIN and 1
 			brightnessScale = (brightnessScale >= 1) ? 1 : brightnessScale;
 			brightnessScale = (brightnessScale <= FALLOFFMIN) ? FALLOFFMIN : brightnessScale;
-			pixelBrightness[pixIdx] += brightnessScale;
+			pixelBrightness[idx] += brightnessScale;
 		}
 	}
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
-			double brightness = pixelBrightness[row * outputWidth + col];
+			double brightness = 10 * pixelBrightness[row * outputWidth + col];
 			string grayscale = GRAYSCALE;
 			if (brightness - intPart(brightness) >= 0.5)
 				brightness += 1;
