@@ -193,42 +193,40 @@ void Mesh::calcCenter(void) {
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
 }
-std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const std::vector<Vector> rays, const bool showProgress) const {
+double Mesh::calculateIntersectDistance(const Point& origin, const Vector& ray) const {
     // Get the normal of the triangle
     // Get the vector from any point on the triangle to the origin
     // Distance = (normal dot (triangle to origin)) / (normal dot normalized ray)
     // If the distance is negative, it is behind the origin of the ray
     // Find the point of intersection by adding distance * normalized ray to the origin coordinates
     // Check for intersection within triangle
+    double rayDistance = DBL_MAX;
+    bool set = false;
+    for (int triIdx = 0; triIdx < tris.size(); triIdx++) {
+        if (tris[triIdx].checkWithin(ray, origin)) {
+            Vector originVector(origin, tris[triIdx].verts[0]);
+            Vector normal = tris[triIdx].normal;
+            Vector normRay = ray;
+            normRay.normalize();
+
+            double dist = (normal.dot(originVector)) / normal.dot(normRay);
+            if (dist < rayDistance) {
+                rayDistance = dist;
+                set = true;
+            }
+        }
+    }
+    if (set)
+        return rayDistance;
+    else
+        return -1;
+}
+std::vector<double> Mesh::calculateIntersectDistances(const Point& origin, const std::vector<Vector> rays, const bool showProgress) const {
     int progress = 0;
     int progressTarget = 0;
     std::vector<double> distances;
     for (int rayIdx = 0; rayIdx < rays.size(); rayIdx++) {
-        std::vector<double> rayDistances;
-        for (int triIdx = 0; triIdx < tris.size(); triIdx++) {
-            if (tris[triIdx].checkWithin(rays[rayIdx], origin)) {
-                Vector originVector(origin, tris[triIdx].verts[0]);
-                Vector normal = tris[triIdx].normal;
-                Vector ray = rays[rayIdx];
-                ray.normalize();
-
-                double dist = (normal.dot(originVector)) / normal.dot(ray);
-                rayDistances.push_back(dist);
-            }
-        }
-        
-        double min = DBL_MAX;
-        bool set = false;
-        for (double dist : rayDistances) {
-            if (dist < min) {
-                min = dist;
-                set = true;
-            }
-        }
-        if (set)
-            distances.push_back(min);
-        else
-            distances.push_back(-1);
+        distances.push_back(calculateIntersectDistance(origin, rays[rayIdx]));
 
         // Displays progress in percentage to the screen
         if (rayIdx > progressTarget && showProgress) {
