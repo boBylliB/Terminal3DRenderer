@@ -105,7 +105,6 @@ Angle Vector::toAngle(void) const {
     // Therefore, I test within reasonable doubt that the value SHOULD be zero in this case
     // Issues this close to zero could lead to undefined behaviour with my math, hence the concern
     if (K < 0.0000000001 && K > -0.0000000001) {
-        /* printf("K was zero\n"); */
         if (I > 0.0)
             a.theta = 0;
         else
@@ -117,14 +116,13 @@ Angle Vector::toAngle(void) const {
             ratio *= -1;
         a.theta = radToDeg(atan(ratio));
         if (K > 0.0 && I < 0.0)
-            a.theta += 90;
+            a.theta = 180.0 - a.theta;
         else if (K < 0.0 && I < 0.0)
             a.theta += 180.0;
         else if (K < 0.0 && I > 0.0)
-            a.theta += 270.0;
+            a.theta = 360.0 - a.theta;
     }
     else {
-        /* printf("I was zero\n"); */
         if (K > 0.0)
             a.theta = 90.0;
         else

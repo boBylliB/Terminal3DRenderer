@@ -25,6 +25,10 @@ void ThreadedCamera::threadedCalculateIntersectDistances(void* arguments) {
 // Core Functions
 // Functions the same as the standard camera display, but does the math in parallel for speed
 void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
+	threadedDisplayMath(m, showProgress).print();
+}
+// Just the math of the display function above, outputting to a Frame to be displayed later
+Frame ThreadedCamera::threadedDisplayMath(const Mesh& m, const bool showProgress) {
 	// Display a line for the output width for verification that the whole display fits on screen
 	for (int idx = 0; idx < outputWidth; idx++) {
 		cout << "@";
@@ -43,7 +47,7 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 			Angle rayAngle = startingAngle;
 			rayAngle.theta += col * angleBetween.theta;
 			rayAngle.phi += row * angleBetween.phi;
-			
+
 			Vector ray(rayAngle);
 			rays.push_back(ray);
 		}
@@ -52,7 +56,7 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 	// Split rays into chunks for threads
 	int raysPerThread = rays.size() / NUMTHREADS;
 
-	vector<Vector> *partialRays[NUMTHREADS];
+	vector<Vector>* partialRays[NUMTHREADS];
 
 	for (int idx = 0; idx < NUMTHREADS - 1; idx++) {
 		partialRays[idx] = new vector<Vector>();
@@ -65,8 +69,8 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 		partialRays[NUMTHREADS - 1]->emplace_back(rays[rayIdx]);
 	}
 	// Calculate the intersection distances for each ray in parallel
-	vector<double> *intersectDistanceSections[NUMTHREADS];
-	threadedCalculationArgs *args[NUMTHREADS];
+	vector<double>* intersectDistanceSections[NUMTHREADS];
+	threadedCalculationArgs* args[NUMTHREADS];
 	thread threadpool[NUMTHREADS];
 	for (int idx = 0; idx < NUMTHREADS; idx++) {
 		intersectDistanceSections[idx] = new vector<double>();
@@ -100,21 +104,17 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 	double falloff = maxDist - minDist;
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
 	cout << "Calculating brightness values" << std::endl;
-	vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
-	for (int idx = 0; idx < intersectDistances.size(); idx++) {
+	std::vector<int> pixelBrightness(outputHeight * outputWidth, 0);
+	for (int idx = 0; idx < pixelBrightness.size(); idx++) {
+		double brightness = 0;
 		if (intersectDistances[idx] > 0) {
-			double brightnessScale = 1.0 - (intersectDistances[idx] - minDist) / falloff;
+			brightness = 1.0 - (intersectDistances[idx] - minDist) / falloff;
 			// Make sure value is between FALLOFFMIN and 1
-			brightnessScale = (brightnessScale >= 1) ? 1 : brightnessScale;
-			brightnessScale = (brightnessScale <= FALLOFFMIN) ? FALLOFFMIN : brightnessScale;
-			pixelBrightness[idx] += brightnessScale;
-		}
-	}
-	// Display the calculated image to the screen
-	for (int row = 0; row < outputHeight; row++) {
-		for (int col = 0; col < outputWidth; col++) {
-			double brightness = 10 * pixelBrightness[row * outputWidth + col];
-			string grayscale = GRAYSCALE;
+			brightness = (brightness >= 1) ? 1 : brightness;
+			brightness = (brightness <= FALLOFFMIN) ? FALLOFFMIN : brightness;
+
+			brightness *= 10;
+			std::string grayscale = GRAYSCALE;
 			if (brightness - intPart(brightness) >= 0.5)
 				brightness += 1;
 			int brightInt = brightness;
@@ -122,10 +122,16 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 				brightInt = grayscale.length() - 1;
 			if (brightInt < 0)
 				brightInt = 0;
-			cout << grayscale[brightInt];
+
+			pixelBrightness[idx] = brightInt;
 		}
-		cout << std::endl;
 	}
+	int height = outputHeight;
+	int width = outputWidth;
+	Frame frame(pixelBrightness, height, width);
+	frame.trimPixels();
+
+	return frame;
 }
 
 #endif

@@ -110,6 +110,10 @@ CUDACamera::CUDACamera(Camera& cam) : Camera(cam.getPosition(), cam.getDirection
 // Core Functions
 // Functions the same as the standard camera display, but does the math in parallel on the GPU for speed
 void CUDACamera::CUDADisplay(const Mesh& m) {
+	CUDADisplayMath(m).print();
+}
+// Just the math of the display function above, outputting to a Frame to be displayed later
+Frame CUDACamera::CUDADisplayMath(const Mesh& m) {
 	// Display a line for the output width for verification that the whole display fits on screen
 	for (int idx = 0; idx < outputWidth; idx++) {
 		cout << "@";
@@ -170,7 +174,7 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 	cudaMemPrefetchAsync(rays, *numRays * sizeof(Vector), device, NULL);
 	// Calculate the intersection distances for each ray in parallel
 	cout << "Beginning GPU Distance Calculations" << endl;
-	CUDACalculateIntersectDistances<<<numBlocks, NUMTHREADSPERBLOCK>>>(numRays, intersectDistances, pos, triArr, numTris, rays);
+	CUDACalculateIntersectDistances << <numBlocks, NUMTHREADSPERBLOCK >> > (numRays, intersectDistances, pos, triArr, numTris, rays);
 	// Now we wait for all threads to finish and collect the results
 	cudaDeviceSynchronize();
 	//cout << "I=" << rays[0].I << ", J=" << rays[0].J << ", K=" << rays[0].K << ", I=" << triArr[0].normal.I << ", J=" << triArr[0].normal.J << ", K=" << triArr[0].normal.K << endl;
@@ -180,45 +184,9 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 		distances.push_back(intersectDistances[idx]);
 	}
 	// Calculate the minimum distance for brightness falloff
-	double minDist = DBL_MAX;
-	double maxDist = 0;
-	for (int idx = 0; idx < *numRays; idx++) {
-		if (distances[idx] < minDist && distances[idx] > 0)
-			minDist = distances[idx];
-		if (distances[idx] > maxDist)
-			maxDist = distances[idx];
-	}
-	if (maxDist <= minDist)
-		maxDist = DBL_MAX;
-	double falloff = maxDist - minDist;
-	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
-	cout << "Calculating brightness values" << std::endl;
-	vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
-	for (int idx = 0; idx < *numRays; idx++) {
-		if (distances[idx] > 0) {
-			double brightnessScale = 1.0 - (distances[idx] - minDist) / falloff;
-			// Make sure value is between FALLOFFMIN and 1
-			brightnessScale = (brightnessScale >= 1) ? 1 : brightnessScale;
-			brightnessScale = (brightnessScale <= FALLOFFMIN) ? FALLOFFMIN : brightnessScale;
-			pixelBrightness[idx] += brightnessScale;
-		}
-	}
-	// Display the calculated image to the screen
-	for (int row = 0; row < outputHeight; row++) {
-		for (int col = 0; col < outputWidth; col++) {
-			double brightness = 10 * pixelBrightness[row * outputWidth + col];
-			string grayscale = GRAYSCALE;
-			if (brightness - intPart(brightness) >= 0.5)
-				brightness += 1;
-			int brightInt = brightness;
-			if (brightInt > grayscale.length() - 1)
-				brightInt = grayscale.length() - 1;
-			if (brightInt < 0)
-				brightInt = 0;
-			cout << grayscale[brightInt];
-		}
-		cout << std::endl;
-	}
+	Frame frame(distances, outputHeight, outputWidth, true);
+	frame.trimPixels();
+
 	// Free memory
 	for (int idx = 0; idx < NUMTHREADS; idx++) {
 		cudaFree(numRays);
@@ -228,6 +196,8 @@ void CUDACamera::CUDADisplay(const Mesh& m) {
 		cudaFree(numTris);
 		cudaFree(rays);
 	}
+
+	return frame;
 }
 
 #endif

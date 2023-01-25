@@ -94,6 +94,7 @@ void Camera::orbit(const Angle& ang, const Point& origin) {
 	diff.rotate(ang);
 	position = diff.toPoint();
 	direction.difference(position, origin);
+	direction.normalize();
 }
 // Runs the orbit function with a point generated from the current view direction and the given radius
 void Camera::orbitCurrent(const Angle& ang, const double radius) {
@@ -105,9 +106,13 @@ void Camera::orbitCurrent(const Angle& ang, const double radius) {
 // Core functions (and any functions that are too complex to be considered "utility")
 // Calculates a snapshot of the mesh from this camera and displays it to the screen
 void Camera::display(const Mesh& m, const bool showProgress) {
+	displayMath(m, showProgress).print();
+}
+// Just the math of the display function above, outputting to a vector of ints to be displayed later
+Frame Camera::displayMath(const Mesh& m, const bool showProgress) {
 	// Calculate the angle between pixels
 	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
-	
+
 	Angle startingAngle((angleBetween.theta * (outputWidth / 2.0) * -1.0), (angleBetween.phi * (outputHeight / 2.0) * -1.0));
 	startingAngle += direction.toAngle();
 
@@ -140,20 +145,16 @@ void Camera::display(const Mesh& m, const bool showProgress) {
 	double falloff = maxDist - minDist;
 	// For each pixel, the "brightness" is the number of rays in that pixel that have an intersection, scaled linearly by distance
 	std::cout << "Calculating brightness values" << std::endl;
-	std::vector<double> pixelBrightness(outputHeight * outputWidth, 0.0);
-	for (int idx = 0; idx < outputHeight * outputWidth; idx++) {
+	std::vector<int> pixelBrightness(outputHeight * outputWidth, 0);
+	for (int idx = 0; idx < pixelBrightness.size(); idx++) {
+		double brightness = 0;
 		if (intersectDistances[idx] > 0) {
-			double brightnessScale = 1.0 - (intersectDistances[idx] - minDist) / falloff;
+			brightness = 1.0 - (intersectDistances[idx] - minDist) / falloff;
 			// Make sure value is between FALLOFFMIN and 1
-			brightnessScale = (brightnessScale >= 1) ? 1 : brightnessScale;
-			brightnessScale = (brightnessScale <= FALLOFFMIN) ? FALLOFFMIN : brightnessScale;
-			pixelBrightness[idx] += brightnessScale;
-		}
-	}
-	// Display the calculated image to the screen
-	for (int row = 0; row < outputHeight; row++) {
-		for (int col = 0; col < outputWidth; col++) {
-			double brightness = 10 * pixelBrightness[row*outputWidth + col];
+			brightness = (brightness >= 1) ? 1 : brightness;
+			brightness = (brightness <= FALLOFFMIN) ? FALLOFFMIN : brightness;
+
+			brightness *= 10;
 			std::string grayscale = GRAYSCALE;
 			if (brightness - intPart(brightness) >= 0.5)
 				brightness += 1;
@@ -162,10 +163,16 @@ void Camera::display(const Mesh& m, const bool showProgress) {
 				brightInt = grayscale.length() - 1;
 			if (brightInt < 0)
 				brightInt = 0;
-			std::cout << grayscale[brightInt];
+
+			pixelBrightness[idx] = brightInt;
 		}
-		std::cout << std::endl;
 	}
+	int height = outputHeight;
+	int width = outputWidth;
+	Frame frame(pixelBrightness, height, width);
+	frame.trimPixels();
+
+	return frame;
 }
 
 #endif

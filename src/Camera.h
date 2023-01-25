@@ -9,6 +9,7 @@
 #include "Vector.h"
 #include "Mesh.h"
 #include "RenderUtils.h"
+#include "Frame.h"
 
 class Camera {
 protected:
@@ -47,11 +48,13 @@ public:
 	// Rotates the camera around the given point while keeping the radius the same, sets the view to point at the orbit center
 	void orbit(const Angle&, const Point&); 
 	// Runs the orbit function with a point generated from the current view direction and the given radius
-	void orbitCurrent(const Angle&, const double); 
+	void orbitCurrent(const Angle&, const double);
 
 	// Core functions (and any functions that are too complex to be considered "utility")
 	// Calculates a snapshot of the mesh from this camera and displays it to the screen
-	void display(const Mesh&, const bool = false); 
+	void display(const Mesh&, const bool = false);
+	// Just the math of the display function above, outputting to a Frame to be displayed later
+	Frame displayMath(const Mesh&, const bool = false);
 };
 
 #endif

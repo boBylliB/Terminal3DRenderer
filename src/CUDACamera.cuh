@@ -11,6 +11,7 @@
 #include "Mesh.h"
 #include "Vector.h"
 #include "Camera.h"
+#include "Frame.h"
 
 // CUDA kernel function to run in parallel on the GPU (cannot be a member function)
 __global__ void CUDACalculateIntersectDistances(int*, double*, Point*, Triangle*, int*, Vector*);
@@ -31,6 +32,8 @@ public:
 	// Core Functions
 	// Functions the same as the standard camera display, but does the math in parallel on the GPU for speed
 	void CUDADisplay(const Mesh&);
+	// Just the math of the display function above, outputting to a Frame to be displayed later
+	Frame CUDADisplayMath(const Mesh&);
 };
 
 #endif

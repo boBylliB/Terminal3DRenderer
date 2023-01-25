@@ -118,14 +118,14 @@ Angle& Angle::operator/=(const double num) {
 // Theta is clamped between 0 and 360, for rotation about the vertical axis
 // Phi is clamped between -180 and 180, for rotation about the horizontal axis, with 0 being straight up
 void Angle::clamp(void) {
-	while (theta > 360)
-		theta -= 360;
-	while (theta < 0)
-		theta += 360;
-	while (phi > 180)
-		phi -= 360;
-	while (phi < -180)
-		phi += 360;
+	while (theta > 360.0)
+		theta -= 360.0;
+	while (theta < 0.0)
+		theta += 360.0;
+	while (phi > 180.0)
+		phi -= 360.0;
+	while (phi < -180.0)
+		phi += 360.0;
 }
 
 #endif
