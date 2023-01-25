@@ -113,7 +113,7 @@ void ThreadedCamera::threadedDisplay(const Mesh& m, const bool showProgress) {
 	// Display the calculated image to the screen
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
-			double brightness = pixelBrightness[row * outputWidth + col];
+			double brightness = 10 * pixelBrightness[row * outputWidth + col];
 			string grayscale = GRAYSCALE;
 			if (brightness - intPart(brightness) >= 0.5)
 				brightness += 1;
