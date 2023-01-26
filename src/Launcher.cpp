@@ -24,7 +24,7 @@ int main(void) {
 	Mesh m;
 	cout << "Triangle count: " << m.numTris << endl;
 
-	Point camPos(7, 4, 7);
+	Point camPos(150, 50, 75);
 	Vector camDir(camPos, m.center);
 	/*
 	Camera cam(camPos, camDir, 35, 0, 5, 5);
