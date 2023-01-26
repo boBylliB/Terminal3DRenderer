@@ -109,11 +109,11 @@ CUDACamera::CUDACamera(Camera& cam) : Camera(cam.getPosition(), cam.getDirection
 
 // Core Functions
 // Functions the same as the standard camera display, but does the math in parallel on the GPU for speed
-void CUDACamera::CUDADisplay(const Mesh& m) {
-	CUDADisplayMath(m).print();
+void CUDACamera::CUDADisplay(const Mesh& m, const bool dither) {
+	CUDADisplayMath(m, dither).print();
 }
 // Just the math of the display function above, outputting to a Frame to be displayed later
-Frame CUDACamera::CUDADisplayMath(const Mesh& m) {
+Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	// Display a line for the output width for verification that the whole display fits on screen
 	for (int idx = 0; idx < outputWidth; idx++) {
 		cout << "@";
@@ -184,7 +184,7 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m) {
 		distances.push_back(intersectDistances[idx]);
 	}
 	// Calculate the minimum distance for brightness falloff
-	Frame frame(distances, outputHeight, outputWidth, true);
+	Frame frame(distances, outputHeight, outputWidth, dither);
 	frame.trimPixels();
 
 	// Free memory

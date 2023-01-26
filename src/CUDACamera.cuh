@@ -31,9 +31,9 @@ public:
 
 	// Core Functions
 	// Functions the same as the standard camera display, but does the math in parallel on the GPU for speed
-	void CUDADisplay(const Mesh&);
+	void CUDADisplay(const Mesh&, const bool = true);
 	// Just the math of the display function above, outputting to a Frame to be displayed later
-	Frame CUDADisplayMath(const Mesh&);
+	Frame CUDADisplayMath(const Mesh&, const bool = true);
 };
 
 #endif
