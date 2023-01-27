@@ -69,12 +69,14 @@ Frame::Frame(const std::vector<double> distances, const int height, const int wi
 }
 
 void Frame::print(void) {
+	std::string output = "";
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
-			std::cout << grayscale[pixels[row * width + col]];
+			output += grayscale[pixels[row * width + col]];
 		}
-		std::cout << std::endl;
+		output += '\n';
 	}
+	std::cout << output;
 }
 void Frame::dither(std::vector<double> brightness, const int height, const int width) {
 	this->height = height;
