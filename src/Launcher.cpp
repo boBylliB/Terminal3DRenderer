@@ -24,28 +24,34 @@ int main(void) {
 	Mesh m;
 	cout << "Triangle count: " << m.numTris << endl;
 
-	Point camPos(150, 50, 75);
+	Point camPos(7, 4, 7);
 	Vector camDir(camPos, m.center);
 	/*
 	Camera cam(camPos, camDir, 35, 0, 5, 5);
 	cam.display(m, true);*/
 
 	CUDACamera tcam(camPos, camDir, 30, 0, 1000, 1000);
-	double theta = 20;
+	double theta = 5;
 	double phi = 0;
 	Angle orbitAng(theta, phi);
 	Point orbitCenter;
 	int numFrames = 360 / abs(theta);
 	vector<Frame> frames;
 	frames.push_back(tcam.CUDADisplayMath(m));
-	for (int idx = 0; idx < numFrames; idx++) {
+	// Since we always generate the first frame, we skip index 0 in the optional for loop
+	for (int idx = 1; idx < numFrames; idx++) {
 		tcam.orbit(orbitAng, orbitCenter);
 		frames.push_back(tcam.CUDADisplayMath(m));
 		cout << "Progress: " << (((double)idx) / (numFrames - 1)) * 100 << "%" << endl;
 	}
 	
-	for (int idx = 0; idx < frames.size(); idx++) {
+	int idx = 0;
+	while (true) {
+		// system("cls") is generally considered terrible practice, but this is simply a test file and therefore it doesn't matter since it won't make it into the other libraries
+		system("cls");
 		frames[idx].print();
+		idx++;
+		if (idx >= frames.size()) idx = 0;
 	}
 
 	return 0;
