@@ -41,9 +41,9 @@ int main(void) {
 	for (int idx = 0; idx < numFrames; idx++) {
 		tcam.orbit(orbitAng, orbitCenter);
 		frames.push_back(tcam.CUDADisplayMath(m));
-		cout << "Progress: " << (((double)idx) / numFrames) * 100 << "%" << endl;
+		cout << "Progress: " << (((double)idx) / (numFrames - 1)) * 100 << "%" << endl;
 	}
-
+	
 	for (int idx = 0; idx < frames.size(); idx++) {
 		frames[idx].print();
 	}

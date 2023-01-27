@@ -203,17 +203,15 @@ double Mesh::calculateIntersectDistance(const Point& origin, const Vector& ray) 
     double rayDistance = DBL_MAX;
     bool set = false;
     for (int triIdx = 0; triIdx < tris.size(); triIdx++) {
-        if (tris[triIdx].checkWithin(ray, origin)) {
-            Vector originVector(origin, tris[triIdx].verts[0]);
-            Vector normal = tris[triIdx].normal;
-            Vector normRay = ray;
-            normRay.normalize();
+        Vector originVector(origin, tris[triIdx].verts[0]);
+        Vector normal = tris[triIdx].normal;
+        Vector normRay = ray;
+        normRay.normalize();
 
-            double dist = (normal.dot(originVector)) / normal.dot(normRay);
-            if (dist < rayDistance) {
-                rayDistance = dist;
-                set = true;
-            }
+        double dist = (normal.dot(originVector)) / normal.dot(normRay);
+        if (dist < rayDistance && tris[triIdx].checkWithin(ray, origin)) {
+            rayDistance = dist;
+            set = true;
         }
     }
     if (set)

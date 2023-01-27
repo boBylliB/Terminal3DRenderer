@@ -12,11 +12,12 @@
 class Frame {
 public:
 	std::vector<int> pixels;
+	std::string grayscale;
 	int height;
 	int width;
 
-	Frame(const std::vector<int>, const int, const int);
-	Frame(const std::vector<double>, const int, const int, const bool = false);
+	Frame(const std::vector<int>, const int, const int, const std::string = GRAYSCALE);
+	Frame(const std::vector<double>, const int, const int, const bool = false, const std::string = GRAYSCALE);
 
 	// Prints the frame to screen
 	void print(void);

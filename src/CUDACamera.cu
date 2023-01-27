@@ -28,16 +28,14 @@ __device__ double CUDACalculateIntersectDistance(Triangle* tris, int numTris, Po
 	bool set = false;
 
 	for (int triIdx = 0; triIdx < numTris; triIdx++) {
-		if (CUDACheckWithin(tris[triIdx], ray, origin)) {
-			Vector originVector = CUDADifferenceVector(ray, origin, tris[triIdx].verts[0]);
-			Vector normal = tris[triIdx].normal;
-			Vector normRay = CUDANormalize(ray);
+		Vector originVector = CUDADifferenceVector(ray, origin, tris[triIdx].verts[0]);
+		Vector normal = tris[triIdx].normal;
+		Vector normRay = CUDANormalize(ray);
 
-			double dist = CUDADot(normal, originVector) / CUDADot(normal, normRay);
-			if (dist < rayDistance) {
-				rayDistance = dist;
-				set = true;
-			}
+		double dist = CUDADot(normal, originVector) / CUDADot(normal, normRay);
+		if (dist < rayDistance && CUDACheckWithin(tris[triIdx], ray, origin)) {
+			set = true;
+			rayDistance = dist;
 		}
 	}
 	if (set) {
@@ -55,24 +53,20 @@ __device__ bool CUDACheckWithin(Triangle tri, Vector dir, Point origin) {
 	Vector limitB = CUDADifferenceVector(dir, origin, tri.verts[1]);
 	Vector limitC = CUDADifferenceVector(dir, origin, tri.verts[2]);
 
-	// Normalize everything for ease of calculation
-	limitA = CUDANormalize(limitA);
-	limitB = CUDANormalize(limitB);
-	limitC = CUDANormalize(limitC);
-	dir = CUDANormalize(dir);
-
 	// Create limiting planes using the bounding vectors
 	Vector planeA = CUDACross(limitB, limitC);
-	Vector planeB = CUDACross(limitA, limitC);
-	Vector planeC = CUDACross(limitA, limitB);
-
 	// If the tested vector is on the same side of each plane as the one bounding vector not within the test plane
 	// Therefore, the only way that it could be on the "inside" of each plane is if the tested vector is between the bounding vectors
-	bool testA = CUDADot(limitA, planeA) * CUDADot(dir, planeA) > 0;
-	bool testB = CUDADot(limitB, planeB) * CUDADot(dir, planeB) > 0;
-	bool testC = CUDADot(limitC, planeC) * CUDADot(dir, planeC) > 0;
+	if (CUDADot(limitA, planeA) * CUDADot(dir, planeA) <= 0) return false;
 
-	return (testA && testB && testC);
+	Vector planeB = CUDACross(limitA, limitC);
+	if (CUDADot(limitB, planeB) * CUDADot(dir, planeB) <= 0) return false;
+
+	Vector planeC = CUDACross(limitA, limitB);
+	if (CUDADot(limitC, planeC) * CUDADot(dir, planeC) <= 0) return false;
+
+	// If we get here, then all tests passed
+	return true;
 }
 __device__ Vector CUDADifferenceVector(Vector vec, Point a, Point b) {
 	Vector out = vec;
@@ -174,11 +168,19 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	cudaMemPrefetchAsync(rays, *numRays * sizeof(Vector), device, NULL);
 	// Calculate the intersection distances for each ray in parallel
 	cout << "Beginning GPU Distance Calculations" << endl;
-	CUDACalculateIntersectDistances << <numBlocks, NUMTHREADSPERBLOCK >> > (numRays, intersectDistances, pos, triArr, numTris, rays);
+	auto start = std::chrono::system_clock::now();
+	CUDACalculateIntersectDistances<<<numBlocks, NUMTHREADSPERBLOCK>>>(numRays, intersectDistances, pos, triArr, numTris, rays);
 	// Now we wait for all threads to finish and collect the results
 	cudaDeviceSynchronize();
 	//cout << "I=" << rays[0].I << ", J=" << rays[0].J << ", K=" << rays[0].K << ", I=" << triArr[0].normal.I << ", J=" << triArr[0].normal.J << ", K=" << triArr[0].normal.K << endl;
 	cout << "Calculated Distances" << endl;
+	auto end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+	std::cout << "finished computation at " << std::ctime(&end_time)
+		<< "elapsed time: " << elapsed_seconds.count() << "s"
+		<< std::endl;
+
 	vector<double> distances;
 	for (int idx = 0; idx < *numRays; idx++) {
 		distances.push_back(intersectDistances[idx]);

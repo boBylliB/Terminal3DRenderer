@@ -3,14 +3,16 @@
 
 #include "Frame.h"
 
-Frame::Frame(const std::vector<int> pixels, const int height, const int width) {
+Frame::Frame(const std::vector<int> pixels, const int height, const int width, const std::string grayscale) {
 	this->pixels = pixels;
 	this->height = height;
 	this->width = width;
+	this->grayscale = grayscale;
 }
-Frame::Frame(const std::vector<double> distances, const int height, const int width, const bool willDither) {
+Frame::Frame(const std::vector<double> distances, const int height, const int width, const bool willDither, const std::string grayscale) {
 	this->height = height;
 	this->width = width;
+	this->grayscale = grayscale;
 	// Calculate the minimum distance for brightness falloff
 	double minDist = DBL_MAX;
 	double maxDist = 0;
@@ -50,7 +52,6 @@ Frame::Frame(const std::vector<double> distances, const int height, const int wi
 				brightness = (brightness <= FALLOFFMIN) ? FALLOFFMIN : brightness;
 
 				brightness *= 10;
-				std::string grayscale = GRAYSCALE;
 				if (brightness - intPart(brightness) >= 0.5)
 					brightness += 1;
 				int brightInt = brightness;
@@ -70,7 +71,6 @@ Frame::Frame(const std::vector<double> distances, const int height, const int wi
 void Frame::print(void) {
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
-			std::string grayscale = GRAYSCALE;
 			std::cout << grayscale[pixels[row * width + col]];
 		}
 		std::cout << std::endl;
@@ -79,7 +79,6 @@ void Frame::print(void) {
 void Frame::dither(std::vector<double> brightness, const int height, const int width) {
 	this->height = height;
 	this->width = width;
-	std::string grayscale = GRAYSCALE;
 	std::vector<int> pixelData(height * width, 0);
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
