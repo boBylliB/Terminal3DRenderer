@@ -148,7 +148,68 @@ void Mesh::buildMesh(MeshFile& mf) {
         // Space for future implementation (MeshFile.cpp should block code execution from reaching here until this is implemented)
         break;
     case Filetype::STL:
-        // Space for future implementation
+        // FUTURE IMPLEMENTATION! Need to write program to convert binary IEEE 754 little-endian 32-bit floating point nums in the binary STL to data in a mesh
+        bool ascii = false;
+        string header = "";
+        if (mf.fin.good()) {
+            char start[5];
+            mf.fin.get(start, 5);
+            if (start == "solid") {
+                ascii = true;
+                string restOfHeader;
+                getline(mf.fin, restOfHeader);
+                header += restOfHeader;
+            }
+            else {
+                header += start;
+                char restOfHeader[75];
+                mf.fin.get(restOfHeader, 75);
+                header += restOfHeader;
+            }
+        }
+        while (mf.fin.good()) {
+            if (ascii) {
+                string line;
+                getline(mf.fin, line);
+                trimString(line);
+
+                string keyword;
+                vector<string> data;
+                int split = 0;
+                for (int idx = 0; idx < line.length(); idx++) {
+                    if (line.at(idx) == ' ') {
+                        if (split == 0)
+                            keyword = line.substr(split, idx - split);
+                        else
+                            data.push_back(line.substr(split, idx - split));
+                        split = idx + 1;
+                    }
+                }
+
+                if (keyword == "vertex") {
+                    Point currentPt;
+                    currentPt.x = stringToDouble(data[0]);
+                    currentPt.y = stringToDouble(data[1]);
+                    currentPt.z = stringToDouble(data[2]);
+                    verts[vert] = currentPt;
+                    vert++;
+
+                    if (vert > 2) {
+                        vert = 0;
+                        Triangle currentTri;
+                        currentTri.verts[0] = verts[0];
+                        currentTri.verts[1] = verts[1];
+                        currentTri.verts[2] = verts[2];
+                        currentTri.calculateNormal();
+                        tris.push_back(currentTri);
+                    }
+                }
+            }
+            else {
+
+            }
+        }
+        numTris = tris.size();
         break;
     }
 

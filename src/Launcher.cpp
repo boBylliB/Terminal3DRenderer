@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cfloat>
+#include <chrono>
 
 #include "Angle.h"
 #include "Camera.h"
@@ -24,11 +25,14 @@ int main(void) {
 	Mesh m;
 	cout << "Triangle count: " << m.numTris << endl;
 
-	Point camPos(7, 4, 7);
+	Point camPos(150, 50, 75);
 	Vector camDir(camPos, m.center);
 	/*
 	Camera cam(camPos, camDir, 35, 0, 5, 5);
 	cam.display(m, true);*/
+
+	int framesPerSecond = 20;
+	double delay = 1.0 / framesPerSecond;
 
 	CUDACamera tcam(camPos, camDir, 30, 0, 1000, 1000);
 	double theta = 5;
@@ -45,13 +49,20 @@ int main(void) {
 		cout << "Progress: " << (((double)idx) / (numFrames - 1)) * 100 << "%" << endl;
 	}
 	
+	ios_base::sync_with_stdio(false);
 	int idx = 0;
+	auto oldTime = std::chrono::high_resolution_clock::now();
 	while (true) {
-		// system("cls") is generally considered terrible practice, but this is simply a test file and therefore it doesn't matter since it won't make it into the other libraries
-		system("cls");
-		frames[idx].print();
-		idx++;
-		if (idx >= frames.size()) idx = 0;
+		auto newTime = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed = newTime - oldTime;
+		if (elapsed.count() > delay) {
+			// system("cls") is generally considered terrible practice, but this is simply a test file and therefore it doesn't matter since it won't make it into the other libraries
+			system("cls");
+			frames[idx].print();
+			idx++;
+			if (idx >= frames.size()) idx = 0;
+			auto oldTime = std::chrono::high_resolution_clock::now();
+		}
 	}
 
 	return 0;
