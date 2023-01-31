@@ -15,6 +15,6 @@ int intPart(double);
 double decPart(double);
 void printLargeDouble(double, int = 2);
 void printLargeInt(int);
-vector<string> getLargeDigit(int);
+std::vector<std::string> getLargeDigit(int);
 
 #endif

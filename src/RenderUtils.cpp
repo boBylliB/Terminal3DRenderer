@@ -300,6 +300,8 @@ vector<string> getLargeDigit(int digit) {
 		output.push_back("  @@@  ");
 		break;
 	}
+
+	return output;
 }
 
 #endif
