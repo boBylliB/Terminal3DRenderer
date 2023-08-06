@@ -19,3 +19,7 @@ C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/LowPolyBenchy.obj
 takes a little over 10 minutes
 
 23.3389
+
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Fark-LargerFin_r2.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Fark-Massive.obj
+C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Fark.obj
