@@ -26,14 +26,14 @@ __device__ double CUDACalculateIntersectDistance(Triangle* tris, int numTris, Po
 	// Check for intersection within triangle
 	double rayDistance = NPP_MAXABS_64F;
 	bool set = false;
+	Vector normRay = CUDANormalize(ray);
 
 	for (int triIdx = 0; triIdx < numTris; triIdx++) {
 		Vector originVector = CUDADifferenceVector(ray, origin, tris[triIdx].verts[0]);
 		Vector normal = tris[triIdx].normal;
-		Vector normRay = CUDANormalize(ray);
 
 		double dist = CUDADot(normal, originVector) / CUDADot(normal, normRay);
-		if (dist < rayDistance && CUDACheckWithin(tris[triIdx], ray, origin)) {
+		if (dist > 0 && dist < rayDistance && CUDACheckWithin(tris[triIdx], ray, origin)) {
 			set = true;
 			rayDistance = dist;
 		}
@@ -108,6 +108,9 @@ void CUDACamera::CUDADisplay(const Mesh& m, const bool dither) {
 }
 // Just the math of the display function above, outputting to a Frame to be displayed later
 Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
+	// Initializing profiler
+	Profiler profiler;
+
 	// Display a line for the output width for verification that the whole display fits on screen
 	for (int idx = 0; idx < outputWidth; idx++) {
 		cout << "@";
@@ -119,6 +122,7 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	Angle startingAngle((angleBetween.theta * (outputWidth / 2.0) * -1.0), (angleBetween.phi * (outputHeight / 2.0) * -1.0));
 	startingAngle += direction.toAngle();
 
+	profiler.start("Memory Allocation");
 	// Create required arrays & data on shared GPU & CPU memory
 	int* numRays;
 	cudaMallocManaged(&numRays, sizeof(int));
@@ -140,7 +144,9 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	vector<Vector> rayVector;
 	Vector* rays;
 	cudaMallocManaged(&rays, *numRays * sizeof(Vector));
+	profiler.end();
 
+	profiler.start("Ray Calculation");
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
 			Angle rayAngle = startingAngle;
@@ -154,6 +160,7 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	for (int idx = 0; idx < *numRays; idx++) {
 		rays[idx] = rayVector[idx];
 	}
+	profiler.end();
 	cout << "Rays created, calculating intersects" << std::endl;
 	// Calculates the number of thread blocks needed, making sure to round up if needed
 	int numBlocks = (*numRays + NUMTHREADSPERBLOCK - 1) / NUMTHREADSPERBLOCK;
@@ -168,19 +175,15 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	cudaMemPrefetchAsync(rays, *numRays * sizeof(Vector), device, NULL);
 	// Calculate the intersection distances for each ray in parallel
 	cout << "Beginning GPU Distance Calculations" << endl;
-	auto start = std::chrono::system_clock::now();
+	profiler.start("GPU Distance Calculations");
 	CUDACalculateIntersectDistances<<<numBlocks, NUMTHREADSPERBLOCK>>>(numRays, intersectDistances, pos, triArr, numTris, rays);
 	// Now we wait for all threads to finish and collect the results
 	cudaDeviceSynchronize();
 	//cout << "I=" << rays[0].I << ", J=" << rays[0].J << ", K=" << rays[0].K << ", I=" << triArr[0].normal.I << ", J=" << triArr[0].normal.J << ", K=" << triArr[0].normal.K << endl;
+	profiler.end();
 	cout << "Calculated Distances" << endl;
-	auto end = std::chrono::system_clock::now();
-	std::chrono::duration<double> elapsed_seconds = end - start;
-	std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-	std::cout << "finished computation at " << std::ctime(&end_time)
-		<< "elapsed time: " << elapsed_seconds.count() << "s"
-		<< std::endl;
 
+	profiler.start("Brightness falloff calculations");
 	vector<double> distances;
 	for (int idx = 0; idx < *numRays; idx++) {
 		distances.push_back(intersectDistances[idx]);
@@ -188,7 +191,9 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	// Calculate the minimum distance for brightness falloff
 	Frame frame(distances, outputHeight, outputWidth, dither);
 	frame.trimPixels();
+	profiler.end();
 
+	profiler.start("Freeing memory");
 	// Free memory
 	for (int idx = 0; idx < NUMTHREADS; idx++) {
 		cudaFree(numRays);
@@ -198,6 +203,10 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 		cudaFree(numTris);
 		cudaFree(rays);
 	}
+	profiler.end();
+
+	profiler.printSegments();
+	profiler.archiveSegments();
 
 	return frame;
 }
