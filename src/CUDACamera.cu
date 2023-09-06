@@ -7,12 +7,24 @@
 
 using namespace std;
 
-// CUDA kernel function to run in parallel on the GPU (cannot be a member function)
+// CUDA kernel functions to run in parallel on the GPU (cannot be a member function)
 __global__ void CUDACalculateIntersectDistances(int* numRays, double* distances, Point* pos, Triangle* tris, int* numTris, Vector* rays) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int stride = blockDim.x * gridDim.x;
 	for (int idx = index; idx < *numRays; idx += stride) {
 		distances[idx] = CUDACalculateIntersectDistance(tris, *numTris, *pos, rays[idx]);
+	}
+}
+__global__ void CUDACalculateRays(int* outDim, Angle* outAngles, int* numRays, Vector* rays) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int stride = blockDim.x * gridDim.x;
+	for (int idx = index; idx < *numRays; idx += stride) {
+		Angle rayAngle = outAngles[0];
+		rayAngle.theta += (idx % outDim[1]) * outAngles[1].theta;
+		rayAngle.phi += (idx / outDim[0]) * outAngles[1].phi;
+
+		Vector ray = CUDAAngleVector(rays[0], rayAngle);
+		rays[idx] = ray;
 	}
 }
 
@@ -33,7 +45,7 @@ __device__ double CUDACalculateIntersectDistance(Triangle* tris, int numTris, Po
 		Vector normal = tris[triIdx].normal;
 
 		double dist = CUDADot(normal, originVector) / CUDADot(normal, normRay);
-		if (dist > 0 && dist < rayDistance && CUDACheckWithin(tris[triIdx], ray, origin)) {
+		if (dist > 0 && dist < rayDistance && CUDACheckWithin(tris[triIdx], normRay, origin)) {
 			set = true;
 			rayDistance = dist;
 		}
@@ -74,6 +86,16 @@ __device__ Vector CUDADifferenceVector(Vector vec, Point a, Point b) {
 	out.J = b.y - a.y;
 	out.K = b.z - a.z;
 	return out;
+}
+__device__ Vector CUDAAngleVector(Vector vec, Angle ang) {
+	Vector out = vec;
+	double degToRadCoeff = (1 / 180.0)* atan(1.0) * 4.0;
+	out.I = cos(degToRadCoeff*ang.theta) * sin(degToRadCoeff*ang.phi);
+	out.J = cos(degToRadCoeff*ang.phi);
+	out.K = sin(degToRadCoeff*ang.theta) * sin(degToRadCoeff*ang.phi);
+
+	// If there's no way to tell how large a vector should be, I just normalize it so that it's easier to scale later
+	out = CUDANormalize(out);
 }
 __device__ Vector CUDANormalize(Vector vec) {
 	double mag = sqrt(vec.I * vec.I + vec.J * vec.J + vec.K * vec.K);
@@ -140,6 +162,14 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	for (int idx = 0; idx < *numTris; idx++) {
 		triArr[idx] = m.tris[idx];
 	}
+	int* outDim;
+	cudaMallocManaged(&outDim, 2 * sizeof(int));
+	outDim[0] = outputHeight;
+	outDim[1] = outputWidth;
+	Angle* outAngles;
+	cudaMallocManaged(&outAngles, 2 * sizeof(Angle));
+	outAngles[0] = startingAngle;
+	outAngles[1] = angleBetween;
 	// Create rays array on shared CPU & GPU memory
 	vector<Vector> rayVector;
 	Vector* rays;
@@ -157,14 +187,14 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 			rayVector.push_back(ray);
 		}
 	}
+	profiler.end();
 	for (int idx = 0; idx < *numRays; idx++) {
 		rays[idx] = rayVector[idx];
 	}
-	profiler.end();
 	cout << "Rays created, calculating intersects" << std::endl;
 	// Calculates the number of thread blocks needed, making sure to round up if needed
 	int numBlocks = (*numRays + NUMTHREADSPERBLOCK - 1) / NUMTHREADSPERBLOCK;
-	// Prefetch the data from the CPU onto the GPU, since we're about to run the GPU code
+	// Prefetch the needed data from the CPU onto the GPU before running the relevant GPU code
 	int device = -1;
 	cudaGetDevice(&device);
 	cudaMemPrefetchAsync(numRays, sizeof(int), device, NULL);
@@ -173,6 +203,18 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	cudaMemPrefetchAsync(triArr, *numTris * sizeof(Triangle), device, NULL);
 	cudaMemPrefetchAsync(numTris, sizeof(int), device, NULL);
 	cudaMemPrefetchAsync(rays, *numRays * sizeof(Vector), device, NULL);
+	//// Calculate rays on the GPU
+	//profiler.start("GPU Ray Calculation");
+	//CUDACalculateRays<<<numBlocks, NUMTHREADSPERBLOCK>>>(outDim, outAngles, numRays, rays);
+	//// Now we wait for all threads to finish and collect the results
+	//cudaDeviceSynchronize();
+	//profiler.end();
+	//int raysMatch = 0;
+	//for (int idx = 0; idx < *numRays; idx++) {
+	//	if (rays[idx] == rayVector[idx]) raysMatch++;
+	//	rays[idx] = rayVector[idx];
+	//}
+	//cout << raysMatch << " rays matched out of " << *numRays << endl;
 	// Calculate the intersection distances for each ray in parallel
 	cout << "Beginning GPU Distance Calculations" << endl;
 	profiler.start("GPU Distance Calculations");

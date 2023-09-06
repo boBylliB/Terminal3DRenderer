@@ -28,6 +28,7 @@ public:
 	Vector operator/(const Vector&);
 	Vector& operator/=(const Vector&);
 	Vector& operator/=(const Point&);
+	bool operator==(const Vector&);
 
 	Angle toAngle(void) const;
 	void fromAngle(const Angle&);

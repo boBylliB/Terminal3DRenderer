@@ -96,6 +96,9 @@ Vector& Vector::operator/=(const Point& pt) {
 
     return *this;
 }
+bool Vector::operator==(const Vector& vec) {
+    return I == vec.I && J == vec.J && K == vec.K;
+}
 
 Angle Vector::toAngle(void) const {
     Angle a;
