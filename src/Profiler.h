@@ -32,7 +32,7 @@ protected:
 	static std::vector<Segment> segmentArchive;
 public:
 	// Creates a timestamp to define the beginning of a segment
-	void start(std::string name);
+	void start(std::string);
 	// Creates a timestamp to define the end of a segment
 	void end();
 	// Prints the name and elapsed time of all recorded segments
