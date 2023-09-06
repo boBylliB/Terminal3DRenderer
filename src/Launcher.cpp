@@ -35,8 +35,8 @@ int main(void) {
 	int framesPerSecond = 20;
 	double delay = 1.0 / framesPerSecond;
 
-	CUDACamera tcam(camPos, camDir, 30, 0, 1000, 1000);
-	double theta = 30;
+	CUDACamera tcam(camPos, camDir, 30, 0, 500, 500);
+	double theta = 45;
 	double phi = 0;
 	Angle orbitAng(theta, phi);
 	Point orbitCenter;

@@ -11,7 +11,12 @@
 class Mesh {
 public:
 	std::vector<Triangle> tris;
+	std::vector<std::vector<Triangle>> triSegments;
+	std::vector<Point> segmentCenters;
+	std::vector<Vector> segmentBounds;
+	std::vector<int> numTrisPerSegment;
 	int numTris;
+	int numSegments;
 	Point center;
 	Vector bounds;
 
@@ -20,6 +25,7 @@ public:
 
 	void buildMesh(MeshFile&);
 	void calcBounds(void);
+	void calcSegments(void);
 
 	// Calculates the intersect distance for a given ray when compared to this mesh
 	// The returned double will be -1 if it doesn't intersect any triangle
