@@ -13,12 +13,13 @@ public:
 	std::vector<Triangle> tris;
 	int numTris;
 	Point center;
+	Vector bounds;
 
 	Mesh(void);
 	Mesh(MeshFile&);
 
 	void buildMesh(MeshFile&);
-	void calcCenter(void);
+	void calcBounds(void);
 
 	// Calculates the intersect distance for a given ray when compared to this mesh
 	// The returned double will be -1 if it doesn't intersect any triangle

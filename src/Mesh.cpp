@@ -213,9 +213,9 @@ void Mesh::buildMesh(MeshFile& mf) {
         break;
     }
 
-    calcCenter();
+    calcBounds();
 }
-void Mesh::calcCenter(void) {
+void Mesh::calcBounds(void) {
     double xMin = 0;
     double xMax = 0;
     double yMin = 0;
@@ -253,6 +253,10 @@ void Mesh::calcCenter(void) {
     center.x = (xMin + xMax) / 2;
     center.y = (yMin + yMax) / 2;
     center.z = (zMin + zMax) / 2;
+    // Extremes now need to be adjusted relative to the center
+    bounds.I = abs(xMax - center.x);
+    bounds.J = abs(yMax - center.y);
+    bounds.K = abs(zMax - center.z);
 }
 double Mesh::calculateIntersectDistance(const Point& origin, const Vector& ray) const {
     // Get the normal of the triangle
