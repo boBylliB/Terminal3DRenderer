@@ -25,5 +25,19 @@
 // The number of threads per block should ALWAYS be a multiple of 32, with a maximum of 1024 (by standard, check your GPU specs to see if it can take more)
 // Be careful when increasing the number of threads per block as it can cause major issues
 #define NUMTHREADSPERBLOCK 512
+// The number of splits to perform when segmenting a mesh
+// All three directions are defined, so for example 1 split in each direction would lead to 8 segments
+// The direction is the normal of the plane to use, so for instance the X direction defines the number of split planes parallel to the YZ plane
+#define NUMSPLITSX 1
+#define NUMSPLITSY 1
+#define NUMSPLITSZ 1
+// The number of splits to perform when chunking rays
+// Two directions are defined, in relation to screen space
+// The direction is the direction perpendicular to the split line, so for instance the X direction defines the number of splits parallel to the Y axis
+#define NUMCHUNKSX 1
+#define NUMCHUNKSY 1
+// The buffer surrounding a segment bounding box
+// This should be balanced to be as small as possible while avoiding any possible missed triangles
+#define SEGMENTBUFFER 0.00001
 
 #endif
