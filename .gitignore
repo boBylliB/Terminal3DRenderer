@@ -5,7 +5,8 @@
 *.slo
 *.lo
 *.o
-*.obj
+/*.obj
+src/*.obj
 
 # Precompiled Headers
 *.gch
