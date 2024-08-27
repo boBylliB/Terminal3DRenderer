@@ -31,3 +31,6 @@ src/*.obj
 *.exe
 *.out
 *.app
+
+#  Visual Studio files
+.vs/*
