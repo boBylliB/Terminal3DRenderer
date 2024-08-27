@@ -22,7 +22,7 @@
 using namespace std;
 
 int main(void) {
-	MeshFile mf("C:/GitHub/Terminal3DRenderer/models/Doge.obj");
+	MeshFile mf("C:/GitHub/Terminal3DRenderer/models/LowPolyBenchy.obj");
 	Mesh m(mf);
 	cout << "Triangle count: " << m.numTris << endl;
 
@@ -32,10 +32,10 @@ int main(void) {
 	Camera cam(camPos, camDir, 35, 0, 5, 5);
 	cam.display(m, true);*/
 
-	int framesPerSecond = 20;
+	int framesPerSecond = 3;
 	double delay = 1.0 / framesPerSecond;
 
-	CUDACamera tcam(camPos, camDir, 30, 0, 500, 500);
+	CUDACamera tcam(camPos, camDir, 30, 0, 1000, 1000);
 	double theta = 45;
 	double phi = 0;
 	Angle orbitAng(theta, phi);
@@ -52,17 +52,22 @@ int main(void) {
 	
 	ios_base::sync_with_stdio(false);
 	int idx = 0;
+	int numLoops = 2;
+	int loopCount = 0;
 	auto oldTime = std::chrono::high_resolution_clock::now();
 	while (true) {
 		auto newTime = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double, std::milli> elapsed = newTime - oldTime;
 		if (elapsed.count() > delay) {
 			// system("cls") is generally considered terrible practice, but this is simply a test file and therefore it doesn't matter since it won't make it into the other libraries
-			//system("cls");
+			system("cls");
 			frames[idx].print();
 			idx++;
-			//if (idx >= frames.size()) idx = 0;
-			if (idx >= frames.size()) break;
+			if (idx >= frames.size()) {
+				idx = 0;
+				loopCount++;
+				if (loopCount >= numLoops) break;
+			}
 			auto oldTime = std::chrono::high_resolution_clock::now();
 		}
 	}
