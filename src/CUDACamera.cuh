@@ -18,6 +18,7 @@
 
 // CUDA kernel functions to run in parallel on the GPU (cannot be a member function)
 __global__ void CUDACalculateIntersectDistances(int*, double*, Point*, Triangle*, int*, Vector*);
+__global__ void CUDACalculateIntersectDistancesSegmented(int*, double*, Point*, Triangle*, Triangle**, int*, int*, Vector*, int*, bool**);
 __global__ void CUDACalculateRays(int*, Angle*, int*, Vector*);
 
 // CUDA device functions

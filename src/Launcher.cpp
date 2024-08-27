@@ -22,7 +22,7 @@
 using namespace std;
 
 int main(void) {
-	MeshFile mf("C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Doge.obj");
+	MeshFile mf("C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/amogus.obj");
 	Mesh m(mf);
 	cout << "Triangle count: " << m.numTris << endl;
 
@@ -35,8 +35,8 @@ int main(void) {
 	int framesPerSecond = 20;
 	double delay = 1.0 / framesPerSecond;
 
-	CUDACamera tcam(camPos, camDir, 30, 0, 500, 500);
-	double theta = 45;
+	CUDACamera tcam(camPos, camDir, 30, 0, 1500, 1000);
+	double theta = 360;
 	double phi = 0;
 	Angle orbitAng(theta, phi);
 	Point orbitCenter;
@@ -61,8 +61,8 @@ int main(void) {
 			system("cls");
 			frames[idx].print();
 			idx++;
-			//if (idx >= frames.size()) idx = 0;
-			if (idx >= frames.size()) break;
+			if (idx >= frames.size()) idx = 0;
+			//if (idx >= frames.size()) break;
 			auto oldTime = std::chrono::high_resolution_clock::now();
 		}
 	}

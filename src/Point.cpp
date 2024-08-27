@@ -14,6 +14,11 @@ Point Point::operator+(const Point& pt) const {
 
 	return output;
 }
+Point Point::operator+(const Vector& vec) const {
+	Point output(vec.I + x, vec.J + y, vec.K + z);
+
+	return output;
+}
 Point& Point::operator+=(const Point& pt) {
 	x += pt.x;
 	y += pt.y;
@@ -23,6 +28,11 @@ Point& Point::operator+=(const Point& pt) {
 }
 Point Point::operator-(const Point& pt) const {
 	Point output(x - pt.x, y - pt.y, z - pt.z);
+
+	return output;
+}
+Point Point::operator-(const Vector& vec) const {
+	Point output(x - vec.I, y - vec.J, z - vec.K);
 
 	return output;
 }

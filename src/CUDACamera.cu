@@ -15,6 +15,17 @@ __global__ void CUDACalculateIntersectDistances(int* numRays, double* distances,
 		distances[idx] = CUDACalculateIntersectDistance(tris, *numTris, *pos, rays[idx]);
 	}
 }
+__global__ void CUDACalculateIntersectDistancesSegmented(int* numRays, double* distances, Point* pos, Triangle* tris, Triangle** triSegments, int* numTris, int* numTrisPerSegment, Vector* rays, int* numSegments, bool** segmentAssignment) {
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+	int stride = blockDim.x * gridDim.x;
+	for (int idx = index; idx < *numRays; idx += stride) {
+		// Get the chunk index that the current ray resides in
+		// Grab the assigned segments based on that chunk index
+		// Calculate intersect distances for each segment
+		// Set the resulting distance to the closest calculated distance
+		distances[idx] = CUDACalculateIntersectDistance(tris, *numTris, *pos, rays[idx]);
+	}
+}
 __global__ void CUDACalculateRays(int* outDim, Angle* outAngles, int* numRays, Vector* rays) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	int stride = blockDim.x * gridDim.x;
@@ -140,10 +151,96 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	cout << endl << endl;
 	// Calculate the angle between pixels
 	Angle angleBetween(fieldOfView.theta / outputWidth, fieldOfView.phi / outputHeight);
-
 	Angle startingAngle((angleBetween.theta * (outputWidth / 2.0) * -1.0), (angleBetween.phi * (outputHeight / 2.0) * -1.0));
 	startingAngle += direction.toAngle();
-
+	// Generate the angles to split at for each ray chunk
+	Angle splitAngle(fieldOfView.theta / (NUMCHUNKSX + 1), fieldOfView.phi / (NUMCHUNKSY + 1));
+	// Create Vectors to form the bounding planes
+	vector<vector<Vector>> boundingVectors;
+	for (int idx = 0; idx < NUMCHUNKSX + 2; idx++) {
+		vector<Vector> currentCol;
+		for (int jdx = 0; jdx < NUMCHUNKSY + 2; jdx++) {
+			Angle currentAngle(startingAngle.theta + idx * splitAngle.theta, startingAngle.phi + jdx * splitAngle.phi);
+			Vector currentVec(currentAngle);
+			currentCol.push_back(currentVec);
+		}
+		boundingVectors.push_back(currentCol);
+	}
+	profiler.start("Segment Allocation");
+	// Segments may lie on both sides of a bounding plane, in which case it should be assigned to all affected chunks
+	vector<vector<bool>> segmentsPerChunk; // each boolean represents a segment, each vector of booleans represents the segments assigned to a chunk of rays
+	// We have to initialize these to zero for future math to work, even though we won't be directly using these on the first pass
+	Vector boundingPlaneY[2] = {};
+	Vector boundingPlaneX[2] = {};
+	for (int idx = 0; idx < NUMCHUNKSX + 1; idx++) {
+		for (int jdx = 0; jdx < NUMCHUNKSY + 1; jdx++) {
+			// Generate bounding planes
+			boundingPlaneX[1] = boundingPlaneX[0];
+			boundingPlaneY[0] = boundingVectors[idx + 1][jdx + 1].cross(boundingVectors[idx + 2][jdx + 1]);
+			boundingPlaneX[1] = boundingPlaneX[0];
+			boundingPlaneX[0] = boundingVectors[idx + 1][jdx + 1].cross(boundingVectors[idx + 1][jdx]);
+			// We move from low angle to high angle, so each iteration should pull chunks from the lower side of the plane
+			// If we're at an iteration greater than 0, we should also take into account the previous split, ignoring any chunks completely covered by previous planes
+			vector<bool> pickedSegments;
+			for (int kdx = 0; kdx < m.numSegments; kdx++) {
+				// Compare the segment center against the bounding planes using a Vector to the top left corner as reference
+				Vector toCenter(position, m.segmentCenters[kdx]);
+				if (boundingVectors[0][0].dot(boundingPlaneX[0]) * toCenter.dot(boundingPlaneX[0]) >= 0 && boundingVectors[0][0].dot(boundingPlaneY[0]) * toCenter.dot(boundingPlaneY[0]) >= 0) {
+					// Make sure at least one of the vertices of the segment bounding box is on the same side of the previous bounding planes as the bottom right corner
+					bool notExcluded = false;
+					for (int xShift = -1; xShift < 2; xShift += 2) {
+						for (int yShift = -1; yShift < 2; yShift += 2) {
+							for (int zShift = -1; zShift < 2; zShift += 2) {
+								Point corner = m.segmentCenters[kdx];
+								corner.x += m.segmentBounds[kdx].I * xShift;
+								corner.y += m.segmentBounds[kdx].J * yShift;
+								corner.z += m.segmentBounds[kdx].K * zShift;
+								Vector toCorner(position, corner);
+								// If this is iteration 0, there are no previous bounding planes, so it cannot have been excluded
+								if ((boundingVectors[NUMCHUNKSX + 1][NUMCHUNKSY + 1].dot(boundingPlaneX[1]) * toCorner.dot(boundingPlaneX[1]) >= 0 || idx == 0)
+									&& (boundingVectors[NUMCHUNKSX + 1][NUMCHUNKSY + 1].dot(boundingPlaneY[1]) * toCenter.dot(boundingPlaneY[1]) >= 0 || jdx == 0)) {
+									notExcluded = true;
+								}
+							}
+						}
+					}
+					// If true, add it to be picked and continue
+					if (notExcluded) {
+						pickedSegments.push_back(true);
+						continue;
+					}
+				}
+				else {
+					// Check if at least one of the vertices of the segment bounding box is on the same side of the current bounding planes as the top left corner
+					bool notExcluded = false;
+					for (int xShift = -1; xShift < 2; xShift += 2) {
+						for (int yShift = -1; yShift < 2; yShift += 2) {
+							for (int zShift = -1; zShift < 2; zShift += 2) {
+								Point corner = m.segmentCenters[kdx];
+								corner.x += m.segmentBounds[kdx].I * xShift;
+								corner.y += m.segmentBounds[kdx].J * yShift;
+								corner.z += m.segmentBounds[kdx].K * zShift;
+								Vector toCorner(position, corner);
+								if (boundingVectors[0][0].dot(boundingPlaneX[0]) * toCorner.dot(boundingPlaneX[0]) >= 0
+									&& boundingVectors[0][0].dot(boundingPlaneY[0]) * toCenter.dot(boundingPlaneY[0]) >= 0) {
+									notExcluded = true;
+								}
+							}
+						}
+					}
+					// If true, add it to be picked and continue
+					if (notExcluded) {
+						pickedSegments.push_back(true);
+						continue;
+					}
+				}
+				// If nothing passes, add false to the vector
+				pickedSegments.push_back(false);
+			}
+			segmentsPerChunk.push_back(pickedSegments);
+		}
+	}
+	profiler.end();
 	profiler.start("Memory Allocation");
 	// Create required arrays & data on shared GPU & CPU memory
 	int* numRays;
@@ -170,13 +267,19 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 	cudaMallocManaged(&outAngles, 2 * sizeof(Angle));
 	outAngles[0] = startingAngle;
 	outAngles[1] = angleBetween;
+	int* numSegments;
+	cudaMallocManaged(&numSegments, sizeof(int));
+	*numSegments = m.numSegments;
 	// Create rays array on shared CPU & GPU memory
 	vector<Vector> rayVector;
 	Vector* rays;
 	cudaMallocManaged(&rays, *numRays * sizeof(Vector));
+	// Segment assignment is an array of booleans for each ray that is read for each ray to determine which tri segments to check for intersections
+	bool** segmentAssignment;
+	cudaMallocManaged(&segmentAssignment, *numRays * (*numSegments * sizeof(bool)));
 	profiler.end();
-
 	profiler.start("Ray Calculation");
+	vector<vector<bool>> segmentAssignmentVector;
 	for (int row = 0; row < outputHeight; row++) {
 		for (int col = 0; col < outputWidth; col++) {
 			Angle rayAngle = startingAngle;
@@ -185,13 +288,39 @@ Frame CUDACamera::CUDADisplayMath(const Mesh& m, const bool dither) {
 
 			Vector ray(rayAngle);
 			rayVector.push_back(ray);
+
+			// Determine which chunk this ray belongs to
+			Vector boundingPlaneY[2] = {};
+			Vector boundingPlaneX[2] = {};
+			for (int idx = 0; idx < NUMCHUNKSX + 1; idx++) {
+				for (int jdx = 0; jdx < NUMCHUNKSY + 1; jdx++) {
+					// Generate bounding planes
+					boundingPlaneX[1] = boundingPlaneX[0];
+					boundingPlaneY[0] = boundingVectors[idx + 1][jdx + 1].cross(boundingVectors[idx + 2][jdx + 1]);
+					boundingPlaneX[1] = boundingPlaneX[0];
+					boundingPlaneX[0] = boundingVectors[idx + 1][jdx + 1].cross(boundingVectors[idx + 1][jdx]);
+					// Test that this vector lies on the same side of the current bounding planes as the top left corner
+					// And that this vector lies on the same side of the previous bounding planes as the bottom right corner
+					// (If this is the first bounding plane for either index, this must be true but would normally return false)
+					if (boundingVectors[0][0].dot(boundingPlaneX[0]) * ray.dot(boundingPlaneX[0]) >= 0
+						&& boundingVectors[0][0].dot(boundingPlaneY[0]) * ray.dot(boundingPlaneY[0]) >= 0
+						&& (boundingVectors[NUMCHUNKSX + 1][NUMCHUNKSY + 1].dot(boundingPlaneX[1]) * ray.dot(boundingPlaneX[1]) >= 0 || idx == 0)
+						&& (boundingVectors[NUMCHUNKSX + 1][NUMCHUNKSY + 1].dot(boundingPlaneY[1]) * ray.dot(boundingPlaneY[1]) >= 0 || jdx == 0)) {
+						// If all of these tests pass, this ray exists within this chunk, and we assign it the segments that its chunk needs to test
+						segmentAssignmentVector.push_back(segmentsPerChunk[idx * (NUMCHUNKSY + 1) + jdx]);
+					}
+				}
+			}
 		}
 	}
 	profiler.end();
 	for (int idx = 0; idx < *numRays; idx++) {
 		rays[idx] = rayVector[idx];
+		for (int jdx = 0; jdx < *numSegments; jdx++) {
+			segmentAssignment[idx][jdx] = segmentAssignmentVector[idx][jdx];
+		}
 	}
-	cout << "Rays created, calculating intersects" << std::endl;
+	cout << "Rays created, calculating intersects" << endl;
 	// Calculates the number of thread blocks needed, making sure to round up if needed
 	int numBlocks = (*numRays + NUMTHREADSPERBLOCK - 1) / NUMTHREADSPERBLOCK;
 	// Prefetch the needed data from the CPU onto the GPU before running the relevant GPU code
