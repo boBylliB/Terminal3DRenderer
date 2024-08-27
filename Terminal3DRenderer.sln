@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Terminal3DRenderer", "Terminal3DRenderer.vcxproj", "{0D64408C-5E83-438F-B50D-2D92CA26B6A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Debug|x64.ActiveCfg = Debug|x64
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Debug|x64.Build.0 = Debug|x64
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Debug|x86.ActiveCfg = Debug|Win32
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Debug|x86.Build.0 = Debug|Win32
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Release|x64.ActiveCfg = Release|x64
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Release|x64.Build.0 = Release|x64
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Release|x86.ActiveCfg = Release|Win32
+		{0D64408C-5E83-438F-B50D-2D92CA26B6A3}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {75AA3D97-5DC7-471B-B963-EE6A0CD75D6F}
+	EndGlobalSection
+EndGlobal

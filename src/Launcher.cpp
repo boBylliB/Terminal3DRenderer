@@ -22,7 +22,7 @@
 using namespace std;
 
 int main(void) {
-	MeshFile mf("C:/Users/jrsan/Documents/GitHub/Terminal3DRenderer/models/Doge.obj");
+	MeshFile mf("C:/GitHub/Terminal3DRenderer/models/Doge.obj");
 	Mesh m(mf);
 	cout << "Triangle count: " << m.numTris << endl;
 
@@ -58,7 +58,7 @@ int main(void) {
 		std::chrono::duration<double, std::milli> elapsed = newTime - oldTime;
 		if (elapsed.count() > delay) {
 			// system("cls") is generally considered terrible practice, but this is simply a test file and therefore it doesn't matter since it won't make it into the other libraries
-			system("cls");
+			//system("cls");
 			frames[idx].print();
 			idx++;
 			//if (idx >= frames.size()) idx = 0;

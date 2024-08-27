@@ -43,8 +43,10 @@ void MeshFile::open(const string& givenFilename) {
 	system("cd");
 
 	fin.open(givenFilename.c_str(), ifstream::in);
-	if (!fin.is_open())
+	if (!fin.is_open()) {
 		perror(("error while opening file: " + givenFilename).c_str());
+		throw "Failed to open file";
+	}
 	if (fin.good()) {
 		extension = givenFilename.substr(givenFilename.length() - 3);
 		if (extension == "obj") {

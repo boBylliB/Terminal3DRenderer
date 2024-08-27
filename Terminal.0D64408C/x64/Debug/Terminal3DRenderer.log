@@ -1,0 +1,5 @@
+﻿  Launcher.cpp
+C:\GitHub\Terminal3DRenderer\src\Launcher.cpp(43,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  MeshFile.cpp
+  Generating Code...
+  Terminal3DRenderer.vcxproj -> C:\GitHub\Terminal3DRenderer\x64\Debug\Terminal3DRenderer.exe
